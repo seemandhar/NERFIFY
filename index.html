@@ -290,13 +290,22 @@
     .figure {
       margin: 36px 0;
       text-align: center;
+      overflow: hidden;
     }
 
     .figure img {
-      max-width: 100%;
+      width: 100%;
+      height: auto;
       border-radius: 8px;
       border: 1px solid var(--color-border);
+      display: block;
+      margin: 0 auto;
     }
+
+    /* Constrain figures that shouldn't span full width on desktop */
+    .figure.fig-narrow img { max-width: 720px; }
+    .figure.fig-medium img { max-width: 800px; }
+    .figure.fig-wide img   { max-width: 100%; }
 
     .figure-caption {
       margin-top: 14px;
@@ -306,6 +315,8 @@
       max-width: 760px;
       margin-left: auto;
       margin-right: auto;
+      text-align: left;
+      padding: 0 4px;
     }
 
     .figure-caption strong { color: var(--color-text); }
@@ -519,13 +530,44 @@
 
     /* ── Responsive ── */
     @media (max-width: 640px) {
-      .hero { padding: 48px 20px 40px; }
-      section { padding: 40px 20px; }
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .hero { padding: 48px 16px 40px; }
+      section { padding: 40px 16px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
       .method-stages { grid-template-columns: 1fr; }
       .innovations { grid-template-columns: 1fr; }
       .bench-grid { grid-template-columns: 1fr 1fr; }
       th, td { padding: 8px 10px; font-size: 13px; }
+
+      .figure { margin: 24px -16px; }
+      .figure img {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+      .figure-caption {
+        padding: 0 16px;
+        font-size: 13px;
+      }
+      .figure.fig-narrow img,
+      .figure.fig-medium img { max-width: 100%; }
+
+      .tldr { padding: 20px; font-size: 15px; margin-left: -4px; margin-right: -4px; }
+      .bibtex-block { padding: 16px; font-size: 12px; }
+      .btn-row { gap: 8px; }
+      .btn { padding: 8px 14px; font-size: 13px; }
+      .authors { gap: 4px 16px; font-size: 15px; }
+      h2 { font-size: 24px; }
+      h3 { font-size: 19px; }
+      .stat-card { padding: 20px 12px; }
+      .stat-number { font-size: 28px; }
+      .table-wrapper { margin: 20px -16px; border-radius: 0; border-left: none; border-right: none; }
+    }
+
+    @media (max-width: 380px) {
+      .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .bench-grid { grid-template-columns: 1fr; }
+      .btn-row { flex-direction: column; align-items: stretch; }
+      .btn { justify-content: center; }
     }
 
     /* ── Comparison visual grid ── */
@@ -597,8 +639,8 @@
     <strong>TL;DR</strong> &mdash; NeRFify uses six specialized AI agents to read a NeRF research paper, recover all its implicit dependencies from cited work, and synthesize a complete Nerfstudio plugin that trains, converges, and matches expert-written code within &plusmn;0.5 dB PSNR. It works on papers that have <em>no public code</em>, reducing implementation time from weeks to hours.
   </div>
 
-  <div class="figure" style="margin-top:48px;">
-    <img src="./static/images/overview.png" alt="NeRFify Overview: Manual NeRF implementation requires weeks of specialized effort. Existing paper-to-code systems fail to produce trainable code. NeRFify automates this through grammar-constrained synthesis and compositional citation recovery." style="max-width:800px;">
+  <div class="figure fig-medium" style="margin-top:48px;">
+    <img src="./static/images/overview.png" alt="NeRFify Overview: Manual NeRF implementation requires weeks of specialized effort. Existing paper-to-code systems fail to produce trainable code. NeRFify automates this through grammar-constrained synthesis and compositional citation recovery.">
     <div class="figure-caption"><strong>Figure 1.</strong> Manual NeRF implementation requires weeks of specialized effort (left). Existing paper-to-code systems fail to produce trainable code. NeRFify automates this process through grammar-constrained synthesis and compositional citation recovery, generating fully trainable Nerfstudio plugins in hours (right).</div>
   </div>
 
@@ -681,8 +723,8 @@
     <h2>Four-Stage Pipeline</h2>
     <p>NeRFify converts NeRF papers into executable code through four coordinated stages, each addressing a specific challenge in automated code synthesis for complex vision systems.</p>
 
-    <div class="figure">
-      <img src="./static/images/pipeline.png" alt="NeRFify four-stage pipeline: CFG Formalization, Compositional Dependency Resolution, GoT Code Synthesis, Visual-Driven Feedback" style="max-width:100%;">
+    <div class="figure fig-wide">
+      <img src="./static/images/pipeline.png" alt="NeRFify four-stage pipeline: CFG Formalization, Compositional Dependency Resolution, GoT Code Synthesis, Visual-Driven Feedback">
       <div class="figure-caption"><strong>Figure 2.</strong> NeRFify converts NeRF papers into code through four stages: (1) Agent parses and summarizes PDFs into structured markdown; CFG from Nerfstudio and curated paper-code pairs serve as in-context examples saved in K. (2) Compositional dependency resolution traverses citation graphs to retrieve missing components from referenced papers. (3) GoT code synthesis generates repository files through specialized agents operating in topological order. (4) Visual refinement iteratively patches artifacts until achieving expert-level quality.</div>
     </div>
 
@@ -709,13 +751,13 @@
       </div>
     </div>
 
-    <div class="figure" style="margin-top:48px;">
-      <img src="./static/images/citation_graph.png" alt="NeRF citation dependency graphs showing K-Planes requires components from 7 direct dependencies and 12 total papers" style="max-width:720px;">
+    <div class="figure fig-narrow" style="margin-top:48px;">
+      <img src="./static/images/citation_graph.png" alt="NeRF citation dependency graphs showing K-Planes requires components from 7 direct dependencies and 12 total papers">
       <div class="figure-caption"><strong>Figure 3.</strong> NeRF citation dependency graphs. Implementing K-Planes requires retrieving components from 7 direct dependencies (Plenoxels, TensoRF, Instant-NGP, Mip-NeRF 360, DyNeRF, EG3D, NeRF-W) and 12 total papers with transitive dependencies. Our compositional citation recovery automatically traverses such graphs to identify and retrieve all necessary components.</div>
     </div>
 
-    <div class="figure">
-      <img src="./static/images/got_synthesis.png" alt="Graph-of-Thought Multi-Agent Code Synthesis showing progressive file generation through DAG construction, interface freezing, implementation, and integration testing" style="max-width:100%;">
+    <div class="figure fig-wide">
+      <img src="./static/images/got_synthesis.png" alt="Graph-of-Thought Multi-Agent Code Synthesis showing progressive file generation through DAG construction, interface freezing, implementation, and integration testing">
       <div class="figure-caption"><strong>Figure 4.</strong> Graph-of-Thought (GoT) Multi-Agent Code Synthesis. The master agent orchestrates specialized file-agents that progressively build a NeRF repository. Each step shows files being created or modified through four phases: DAG Construction maps papers to Nerfstudio component dependencies, Interface Freeze establishes API contracts in topological order, Implementation generates validated code with shape/gradient checks, and Integration Testing runs smoke tests with automated repair.</div>
     </div>
   </div>
@@ -852,13 +894,13 @@
       </table>
     </div>
 
-    <div class="figure" style="margin-top:40px;">
-      <img src="./static/images/visual_comparison_1.png" alt="Visual comparison of Ground Truth, Expert Implementation, and NeRFify output across KeyNeRF, mi-MLP NeRF, Anisotropic NeRF, ERS, and TVNeRF" style="max-width:100%;">
+    <div class="figure fig-wide" style="margin-top:40px;">
+      <img src="./static/images/visual_comparison_1.png" alt="Visual comparison of Ground Truth, Expert Implementation, and NeRFify output across KeyNeRF, mi-MLP NeRF, Anisotropic NeRF, ERS, and TVNeRF">
       <div class="figure-caption"><strong>Figure 5.</strong> Visual comparison of NeRFify and human expert implementations on Set 1 (never-implemented papers). <strong>Left:</strong> Ground Truth. <strong>Middle:</strong> Expert Implementation. <strong>Right:</strong> NeRFify. Our system reproduces fine details including specular highlights, geometric edges, and texture patterns, matching expert-level visual quality.</div>
     </div>
 
-    <div class="figure">
-      <img src="./static/images/visual_comparison_2.png" alt="Additional visual comparisons showing LiNeRF, mi-MLP NeRF, NeRF-ID, and TVNeRF results" style="max-width:100%;">
+    <div class="figure fig-wide">
+      <img src="./static/images/visual_comparison_2.png" alt="Additional visual comparisons showing LiNeRF, mi-MLP NeRF, NeRF-ID, and TVNeRF results">
       <div class="figure-caption"><strong>Figure 6.</strong> Extended qualitative comparisons from NeRFifyBench Set 1. <strong>Left:</strong> Ground Truth. <strong>Middle:</strong> Expert Implementation. <strong>Right:</strong> NeRFify. Across diverse scene types and NeRF architectures, NeRFify consistently achieves rendering quality comparable to expert human implementations.</div>
     </div>
 
@@ -1049,8 +1091,8 @@
     <h2>NeRFifyBench: 30 Papers, Four Categories</h2>
     <p>We contribute NeRFifyBench, the first evaluation framework specifically designed for NeRF paper-to-code synthesis. Papers are curated to cover diverse architectural innovations, training strategies, and integration complexity.</p>
 
-    <div class="figure">
-      <img src="./static/images/nerfifybench_categories.png" alt="Categorization of NeRF Papers by Integrability in Nerfstudio framework" style="max-width:780px;">
+    <div class="figure fig-medium">
+      <img src="./static/images/nerfifybench_categories.png" alt="Categorization of NeRF Papers by Integrability in Nerfstudio framework">
       <div class="figure-caption"><strong>Figure 7.</strong> Categorization of NeRF papers by integrability in Nerfstudio. Papers are grouped by implementation difficulty. <strong>Category 1:</strong> Directly integrable methods modifying architecture, rendering, or losses. <strong>Category 2:</strong> Methods requiring pretrained models (CLIP, diffusion, SLAM) with substantial engineering effort. <strong>Category 3:</strong> Out-of-scope works where NeRF serves different objectives.</div>
     </div>
 
