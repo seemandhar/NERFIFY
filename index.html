@@ -8,9 +8,22 @@
     2. pipeline.png          — Figure 2 from main paper (full 4-stage pipeline)
     3. citation_graph.png    — Figure 3 from main paper (K-Planes dependency graph)
     4. got_synthesis.png     — Figure 4 from main paper (GoT multi-agent code synthesis)
-    5. visual_comparison_1.png — Figure 5 from main paper (GT vs Expert vs NERFIFY: KeyNeRF, mi-MLP, Anisotropic, ERS, TVNeRF)
-    6. visual_comparison_2.png — Figure 1+2 from supplementary (GT vs Human vs NERFIFY: LiNeRF, mi-MLP, NeRF-ID, TVNeRF)
-    7. NERFIFY-BENCH_categories.png — Figure 3 from supplementary (paper categorization Venn/grouping diagram)
+    5. visual_comparison_1.png — Figure 5 from main paper (GT vs Expert vs NERFIFY)
+    6. visual_comparison_2.png — Figures 1+2 from supplementary (extended comparisons)
+    7. nerfifybench_categories.png — Figure 3 from supplementary (paper categorization)
+  
+  Place the following PDFs in ./static/pdfs/ :
+  
+    1. nerfify_paper.pdf          — Main paper PDF
+    2. nerfify_supplementary.pdf  — Supplementary material PDF
+  
+  Place the demo video in ./static/videos/ :
+  
+    1. nerfify.mp4                — Demo video
+  
+  Optional poster image in ./static/images/ :
+  
+    8. video_poster.png           — Video thumbnail (optional, remove poster attr if not using)
 -->
 <html lang="en">
 <head>
@@ -89,7 +102,7 @@
       color: var(--color-text);
     }
 
-    .hero h1 .NERFIFY {
+    .hero h1 .nerfify {
       color: var(--color-accent);
     }
 
@@ -579,6 +592,127 @@
       font-style: italic;
     }
 
+    /* ── Video Player ── */
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      background: #000;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    }
+
+    .video-container video {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    @media (max-width: 640px) {
+      .video-container {
+        border-radius: 0;
+        margin: 0 -16px;
+        width: calc(100% + 32px);
+        max-width: none;
+        border-left: none;
+        border-right: none;
+        box-shadow: none;
+      }
+    }
+
+    /* ── PDF Viewer Modal ── */
+    .pdf-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .pdf-overlay.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pdf-overlay.show { opacity: 1; }
+
+    .pdf-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: #1a1a1a;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .pdf-title {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-right: 16px;
+    }
+
+    .pdf-toolbar-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .pdf-toolbar-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .pdf-toolbar-btn:hover {
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .pdf-toolbar-btn.close-btn {
+      border: none;
+      background: none;
+      font-size: 22px;
+      padding: 4px 8px;
+      line-height: 1;
+    }
+
+    .pdf-viewer-frame {
+      flex: 1;
+      border: none;
+      width: 100%;
+      background: #525659;
+    }
+
+    @media (max-width: 640px) {
+      .pdf-toolbar { padding: 10px 14px; }
+      .pdf-title { font-size: 13px; }
+      .pdf-toolbar-btn span.btn-label { display: none; }
+      .pdf-toolbar-btn { padding: 7px 10px; }
+    }
+
     /* ── Scroll animation ── */
     .fade-in {
       opacity: 0;
@@ -598,7 +732,7 @@
 <!-- ════════════════════ HERO ════════════════════ -->
 <header class="hero">
   <div class="hero-badge">CVPR 2026</div>
-  <h1><span class="NERFIFY">NERFIFY</span>: A Multi-Agent Framework for Turning NeRF Papers into Code</h1>
+  <h1><span class="nerfify">NERFIFY</span>: A Multi-Agent Framework for Turning NeRF Papers into Code</h1>
   <p class="subtitle">Converting research papers into trainable Nerfstudio plugins with 100% success rate, while existing approaches fail 95% of the time.</p>
 
   <div class="authors">
@@ -613,15 +747,19 @@
   </div>
 
   <div class="btn-row">
-    <a href="#" class="btn btn-primary">
+    <a href="#" class="btn btn-primary" onclick="openPDF('./static/pdfs/nerfify_paper.pdf', 'NERFIFY — Main Paper'); return false;">
       <span class="icon"><i class="fas fa-file-pdf"></i></span>
       <span>Paper</span>
+    </a>
+    <a href="#" class="btn" onclick="openPDF('./static/pdfs/nerfify_supplementary.pdf', 'NERFIFY — Supplementary Material'); return false;">
+      <span class="icon"><i class="fas fa-file-alt"></i></span>
+      <span>Supplementary</span>
     </a>
     <a href="#" class="btn">
       <span class="icon"><i class="ai ai-arxiv"></i></span>
       <span>arXiv</span>
     </a>
-    <a href="#" class="btn">
+    <a href="#demo" class="btn">
       <span class="icon"><i class="fab fa-youtube"></i></span>
       <span>Video</span>
     </a>
@@ -676,6 +814,23 @@
     <p>
       Unlike generic paper-to-code systems that prioritize breadth, NERFIFY achieves domain-specific executability through six key innovations: context-free grammar formalization of Nerfstudio, Graph-of-Thought multi-agent synthesis, compositional citation recovery, closed-loop visual refinement, agentic knowledge enhancement, and the NERFIFY-BENCH evaluation framework. On research papers without public implementations, NERFIFY achieves visual quality matching expert human code (&plusmn;0.5 dB PSNR, &plusmn;0.02 SSIM) while reducing implementation time from weeks to hours.
     </p>
+  </div>
+</section>
+
+
+<!-- ════════════════════ DEMO VIDEO ════════════════════ -->
+<section id="demo">
+  <div class="container fade-in">
+    <div class="section-label">Demo</div>
+    <h2>NERFIFY in Action</h2>
+    <p>Watch NERFIFY convert a NeRF research paper into a fully trainable Nerfstudio plugin, from PDF parsing through compositional citation recovery to final rendering.</p>
+
+    <div class="video-container">
+      <video controls playsinline preload="metadata" poster="./static/images/video_poster.png">
+        <source src="./static/videos/nerfify.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
   </div>
 </section>
 
@@ -1133,7 +1288,7 @@
     <h2>BibTeX</h2>
 
     <div class="bibtex-block" id="bibtex">
-      <button class="copy-btn" onclick="copyBibtex()">Copy</button>@inproceedings{jain2026NERFIFY,
+      <button class="copy-btn" onclick="copyBibtex()">Copy</button>@inproceedings{jain2026nerfify,
   title     = {NERFIFY: A Multi-Agent Framework for Turning NeRF Papers into Code},
   author    = {Jain, Seemandhar and Gupta, Keshav and Gupta, Kunal and Chandraker, Manmohan},
   booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
@@ -1152,8 +1307,63 @@
 </footer>
 
 
+<!-- ════════════════════ PDF VIEWER MODAL ════════════════════ -->
+<div class="pdf-overlay" id="pdfOverlay">
+  <div class="pdf-toolbar">
+    <div class="pdf-title" id="pdfTitle">Paper</div>
+    <div class="pdf-toolbar-actions">
+      <a class="pdf-toolbar-btn" id="pdfDownload" href="#" download>
+        <i class="fas fa-download"></i>
+        <span class="btn-label">Download</span>
+      </a>
+      <a class="pdf-toolbar-btn" id="pdfNewTab" href="#" target="_blank">
+        <i class="fas fa-external-link-alt"></i>
+        <span class="btn-label">Open in Tab</span>
+      </a>
+      <button class="pdf-toolbar-btn close-btn" onclick="closePDF()" aria-label="Close">&times;</button>
+    </div>
+  </div>
+  <iframe class="pdf-viewer-frame" id="pdfFrame" src=""></iframe>
+</div>
+
+
 <script>
-  // Copy BibTeX
+  // ── PDF Viewer ──
+  function openPDF(url, title) {
+    const overlay = document.getElementById('pdfOverlay');
+    const frame = document.getElementById('pdfFrame');
+    document.getElementById('pdfTitle').textContent = title || 'PDF Viewer';
+    document.getElementById('pdfDownload').href = url;
+    document.getElementById('pdfNewTab').href = url;
+    frame.src = url;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => overlay.classList.add('show'));
+    });
+  }
+
+  function closePDF() {
+    const overlay = document.getElementById('pdfOverlay');
+    overlay.classList.remove('show');
+    document.body.style.overflow = '';
+    setTimeout(() => {
+      overlay.classList.remove('active');
+      document.getElementById('pdfFrame').src = '';
+    }, 250);
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closePDF();
+  });
+
+  // Close on overlay background click (not on the iframe/toolbar)
+  document.getElementById('pdfOverlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closePDF();
+  });
+
+  // ── Copy BibTeX ──
   function copyBibtex() {
     const bib = document.getElementById('bibtex').innerText.replace('Copy', '').trim();
     navigator.clipboard.writeText(bib).then(() => {
@@ -1163,7 +1373,7 @@
     });
   }
 
-  // Fade-in on scroll
+  // ── Fade-in on scroll ──
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
