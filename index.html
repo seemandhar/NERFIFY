@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  NeRFify Project Page — CVPR 2026
+  NERFIFY Project Page — CVPR 2026
   
   Place the following images in ./static/images/ :
   
@@ -8,17 +8,17 @@
     2. pipeline.png          — Figure 2 from main paper (full 4-stage pipeline)
     3. citation_graph.png    — Figure 3 from main paper (K-Planes dependency graph)
     4. got_synthesis.png     — Figure 4 from main paper (GoT multi-agent code synthesis)
-    5. visual_comparison_1.png — Figure 5 from main paper (GT vs Expert vs NeRFify: KeyNeRF, mi-MLP, Anisotropic, ERS, TVNeRF)
-    6. visual_comparison_2.png — Figure 1+2 from supplementary (GT vs Human vs NeRFify: LiNeRF, mi-MLP, NeRF-ID, TVNeRF)
-    7. nerfifybench_categories.png — Figure 3 from supplementary (paper categorization Venn/grouping diagram)
+    5. visual_comparison_1.png — Figure 5 from main paper (GT vs Expert vs NERFIFY: KeyNeRF, mi-MLP, Anisotropic, ERS, TVNeRF)
+    6. visual_comparison_2.png — Figure 1+2 from supplementary (GT vs Human vs NERFIFY: LiNeRF, mi-MLP, NeRF-ID, TVNeRF)
+    7. NERFIFYbench_categories.png — Figure 3 from supplementary (paper categorization Venn/grouping diagram)
 -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="description" content="NERFIFY: A Multi-Agent Framework for Turning NeRF Papers into Code. Accepted to CVPR 2026.">
-  <meta name="keywords" content="NeRFify, NeRF, Paper-to-Code, Multi-Agent, Nerfstudio, CVPR 2026">
+  <meta name="keywords" content="NERFIFY, NeRF, Paper-to-Code, Multi-Agent, Nerfstudio, CVPR 2026">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NeRFify: Turning NeRF Papers into Code</title>
+  <title>NERFIFY: Turning NeRF Papers into Code</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -89,7 +89,7 @@
       color: var(--color-text);
     }
 
-    .hero h1 .nerfify {
+    .hero h1 .NERFIFY {
       color: var(--color-accent);
     }
 
@@ -598,7 +598,7 @@
 <!-- ════════════════════ HERO ════════════════════ -->
 <header class="hero">
   <div class="hero-badge">CVPR 2026</div>
-  <h1><span class="nerfify">NeRFify</span>: A Multi-Agent Framework for Turning NeRF Papers into Code</h1>
+  <h1><span class="NERFIFY">NERFIFY</span>: A Multi-Agent Framework for Turning NeRF Papers into Code</h1>
   <p class="subtitle">Converting research papers into trainable Nerfstudio plugins with 100% success rate, while existing approaches fail 95% of the time.</p>
 
   <div class="authors">
@@ -636,12 +636,12 @@
   </div>
 
   <div class="tldr">
-    <strong>TL;DR</strong> &mdash; NeRFify uses six specialized AI agents to read a NeRF research paper, recover all its implicit dependencies from cited work, and synthesize a complete Nerfstudio plugin that trains, converges, and matches expert-written code within &plusmn;0.5 dB PSNR. It works on papers that have <em>no public code</em>, reducing implementation time from weeks to hours.
+    <strong>TL;DR</strong> &mdash; NERFIFY uses six specialized AI agents to read a NeRF research paper, recover all its implicit dependencies from cited work, and synthesize a complete Nerfstudio plugin that trains, converges, and matches expert-written code within &plusmn;0.5 dB PSNR. It works on papers that have <em>no public code</em>, reducing implementation time from weeks to hours.
   </div>
 
   <div class="figure fig-medium" style="margin-top:48px;">
-    <img src="./static/images/overview.png" alt="NeRFify Overview: Manual NeRF implementation requires weeks of specialized effort. Existing paper-to-code systems fail to produce trainable code. NeRFify automates this through grammar-constrained synthesis and compositional citation recovery.">
-    <div class="figure-caption"><strong>Figure 1.</strong> Manual NeRF implementation requires weeks of specialized effort (left). Existing paper-to-code systems fail to produce trainable code. NeRFify automates this process through grammar-constrained synthesis and compositional citation recovery, generating fully trainable Nerfstudio plugins in hours (right).</div>
+    <img src="./static/images/overview.png" alt="NERFIFY Overview: Manual NeRF implementation requires weeks of specialized effort. Existing paper-to-code systems fail to produce trainable code. NERFIFY automates this through grammar-constrained synthesis and compositional citation recovery.">
+    <div class="figure-caption"><strong>Figure 1.</strong> Manual NeRF implementation requires weeks of specialized effort (left). Existing paper-to-code systems fail to produce trainable code. NERFIFY automates this process through grammar-constrained synthesis and compositional citation recovery, generating fully trainable Nerfstudio plugins in hours (right).</div>
   </div>
 
   <div class="stats-row">
@@ -659,7 +659,7 @@
     </div>
     <div class="stat-card fade-in">
       <div class="stat-number">30</div>
-      <div class="stat-label">Papers in<br>NeRFifyBench</div>
+      <div class="stat-label">Papers in<br>NERFIFYBench</div>
     </div>
   </div>
 </header>
@@ -671,10 +671,10 @@
     <div class="section-label">Abstract</div>
     <h2>Bridging the NeRF Reproducibility Gap</h2>
     <p>
-      Neural radiance field (NeRF) research has expanded rapidly, creating a critical bottleneck: most papers ship without code, forcing researchers to spend weeks reimplementing methods before building upon them. We introduce <strong>NeRFify</strong>, a multi-agent framework that converts NeRF research papers into trainable Nerfstudio plugins with 100% success rate, while baselines like Paper2Code, AutoP2C, and GPT-5 fail 95% of the time to produce runnable code.
+      Neural radiance field (NeRF) research has expanded rapidly, creating a critical bottleneck: most papers ship without code, forcing researchers to spend weeks reimplementing methods before building upon them. We introduce <strong>NERFIFY</strong>, a multi-agent framework that converts NeRF research papers into trainable Nerfstudio plugins with 100% success rate, while baselines like Paper2Code, AutoP2C, and GPT-5 fail 95% of the time to produce runnable code.
     </p>
     <p>
-      Unlike generic paper-to-code systems that prioritize breadth, NeRFify achieves domain-specific executability through six key innovations: context-free grammar formalization of Nerfstudio, Graph-of-Thought multi-agent synthesis, compositional citation recovery, closed-loop visual refinement, agentic knowledge enhancement, and the NeRFifyBench evaluation framework. On research papers without public implementations, NeRFify achieves visual quality matching expert human code (&plusmn;0.5 dB PSNR, &plusmn;0.02 SSIM) while reducing implementation time from weeks to hours.
+      Unlike generic paper-to-code systems that prioritize breadth, NERFIFY achieves domain-specific executability through six key innovations: context-free grammar formalization of Nerfstudio, Graph-of-Thought multi-agent synthesis, compositional citation recovery, closed-loop visual refinement, agentic knowledge enhancement, and the NERFIFYBench evaluation framework. On research papers without public implementations, NERFIFY achieves visual quality matching expert human code (&plusmn;0.5 dB PSNR, &plusmn;0.02 SSIM) while reducing implementation time from weeks to hours.
     </p>
   </div>
 </section>
@@ -705,10 +705,10 @@
       </div>
       <div class="innovation">
         <h4>5. Agentic Knowledge Enhancement</h4>
-        <p>Beyond reproduction, NeRFify identifies optimization opportunities in existing implementations, discovering missing regularizers and architectural refinements.</p>
+        <p>Beyond reproduction, NERFIFY identifies optimization opportunities in existing implementations, discovering missing regularizers and architectural refinements.</p>
       </div>
       <div class="innovation">
-        <h4>6. NeRFifyBench Benchmark</h4>
+        <h4>6. NERFIFYBench Benchmark</h4>
         <p>The first evaluation framework for NeRF paper-to-code synthesis, covering 30 diverse papers across four distinct categories.</p>
       </div>
     </div>
@@ -721,11 +721,11 @@
   <div class="container-wide fade-in">
     <div class="section-label">Method</div>
     <h2>Four-Stage Pipeline</h2>
-    <p>NeRFify converts NeRF papers into executable code through four coordinated stages, each addressing a specific challenge in automated code synthesis for complex vision systems.</p>
+    <p>NERFIFY converts NeRF papers into executable code through four coordinated stages, each addressing a specific challenge in automated code synthesis for complex vision systems.</p>
 
     <div class="figure fig-wide">
-      <img src="./static/images/pipeline.png" alt="NeRFify four-stage pipeline: CFG Formalization, Compositional Dependency Resolution, GoT Code Synthesis, Visual-Driven Feedback">
-      <div class="figure-caption"><strong>Figure 2.</strong> NeRFify converts NeRF papers into code through four stages: (1) Agent parses and summarizes PDFs into structured markdown; CFG from Nerfstudio and curated paper-code pairs serve as in-context examples saved in K. (2) Compositional dependency resolution traverses citation graphs to retrieve missing components from referenced papers. (3) GoT code synthesis generates repository files through specialized agents operating in topological order. (4) Visual refinement iteratively patches artifacts until achieving expert-level quality.</div>
+      <img src="./static/images/pipeline.png" alt="NERFIFY four-stage pipeline: CFG Formalization, Compositional Dependency Resolution, GoT Code Synthesis, Visual-Driven Feedback">
+      <div class="figure-caption"><strong>Figure 2.</strong> NERFIFY converts NeRF papers into code through four stages: (1) Agent parses and summarizes PDFs into structured markdown; CFG from Nerfstudio and curated paper-code pairs serve as in-context examples saved in K. (2) Compositional dependency resolution traverses citation graphs to retrieve missing components from referenced papers. (3) GoT code synthesis generates repository files through specialized agents operating in topological order. (4) Visual refinement iteratively patches artifacts until achieving expert-level quality.</div>
     </div>
 
     <div class="method-stages">
@@ -769,10 +769,10 @@
   <div class="container-wide fade-in">
     <div class="section-label">Results</div>
     <h2>Experimental Evaluation</h2>
-    <p>We evaluate NeRFify on the NeRFifyBench dataset of 30 diverse NeRF papers across four categories. All experiments are conducted on NVIDIA A6000 GPUs (48 GB) with 100k training iterations on Blender and DTU datasets.</p>
+    <p>We evaluate NERFIFY on the NERFIFYBench dataset of 30 diverse NeRF papers across four categories. All experiments are conducted on NVIDIA A6000 GPUs (48 GB) with 100k training iterations on Blender and DTU datasets.</p>
 
     <h3>Executability Comparison</h3>
-    <p class="table-subtitle">NeRFify is the only system that consistently produces code that compiles, trains stably, and converges to paper-reported quality. All baselines fail to generate trainable code despite producing syntactically valid Python.</p>
+    <p class="table-subtitle">NERFIFY is the only system that consistently produces code that compiles, trains stably, and converges to paper-reported quality. All baselines fail to generate trainable code despite producing syntactically valid Python.</p>
 
     <div class="table-wrapper">
       <table>
@@ -783,7 +783,7 @@
             <th>AutoP2C</th>
             <th>GPT-5</th>
             <th>R1</th>
-            <th>NeRFify (Ours)</th>
+            <th>NERFIFY (Ours)</th>
           </tr>
         </thead>
         <tbody>
@@ -833,7 +833,7 @@
             <th rowspan="2">Paper</th>
             <th colspan="3" style="text-align:center; border-bottom:1px solid var(--color-border);">Paper Reported</th>
             <th colspan="3" style="text-align:center; border-bottom:1px solid var(--color-border);">Human Expert</th>
-            <th colspan="3" style="text-align:center; border-bottom:1px solid var(--color-border);">NeRFify (Ours)</th>
+            <th colspan="3" style="text-align:center; border-bottom:1px solid var(--color-border);">NERFIFY (Ours)</th>
           </tr>
           <tr>
             <th>PSNR&#8593;</th><th>SSIM&#8593;</th><th>LPIPS&#8595;</th>
@@ -895,17 +895,17 @@
     </div>
 
     <div class="figure fig-wide" style="margin-top:40px;">
-      <img src="./static/images/visual_comparison_1.png" alt="Visual comparison of Ground Truth, Expert Implementation, and NeRFify output across KeyNeRF, mi-MLP NeRF, Anisotropic NeRF, ERS, and TVNeRF">
-      <div class="figure-caption"><strong>Figure 5.</strong> Visual comparison of NeRFify and human expert implementations on Set 1 (never-implemented papers). <strong>Left:</strong> Ground Truth. <strong>Middle:</strong> Expert Implementation. <strong>Right:</strong> NeRFify. Our system reproduces fine details including specular highlights, geometric edges, and texture patterns, matching expert-level visual quality.</div>
+      <img src="./static/images/visual_comparison_1.png" alt="Visual comparison of Ground Truth, Expert Implementation, and NERFIFY output across KeyNeRF, mi-MLP NeRF, Anisotropic NeRF, ERS, and TVNeRF">
+      <div class="figure-caption"><strong>Figure 5.</strong> Visual comparison of NERFIFY and human expert implementations on Set 1 (never-implemented papers). <strong>Left:</strong> Ground Truth. <strong>Middle:</strong> Expert Implementation. <strong>Right:</strong> NERFIFY. Our system reproduces fine details including specular highlights, geometric edges, and texture patterns, matching expert-level visual quality.</div>
     </div>
 
     <div class="figure fig-wide">
       <img src="./static/images/visual_comparison_2.png" alt="Additional visual comparisons showing LiNeRF, mi-MLP NeRF, NeRF-ID, and TVNeRF results">
-      <div class="figure-caption"><strong>Figure 6.</strong> Extended qualitative comparisons from NeRFifyBench Set 1. <strong>Left:</strong> Ground Truth. <strong>Middle:</strong> Expert Implementation. <strong>Right:</strong> NeRFify. Across diverse scene types and NeRF architectures, NeRFify consistently achieves rendering quality comparable to expert human implementations.</div>
+      <div class="figure-caption"><strong>Figure 6.</strong> Extended qualitative comparisons from NERFIFYBench Set 1. <strong>Left:</strong> Ground Truth. <strong>Middle:</strong> Expert Implementation. <strong>Right:</strong> NERFIFY. Across diverse scene types and NeRF architectures, NERFIFY consistently achieves rendering quality comparable to expert human implementations.</div>
     </div>
 
     <h3>Sets 2 &amp; 3: Comparison with Existing Implementations</h3>
-    <p class="table-subtitle">NeRFify achieves comparable or better performance when compared to original author repositories and gold-standard Nerfstudio integrations.</p>
+    <p class="table-subtitle">NERFIFY achieves comparable or better performance when compared to original author repositories and gold-standard Nerfstudio integrations.</p>
 
     <div class="table-wrapper">
       <table>
@@ -913,7 +913,7 @@
           <tr>
             <th rowspan="2">Method</th>
             <th colspan="3" style="text-align:center; border-bottom:1px solid var(--color-border);">Original Repository</th>
-            <th colspan="3" style="text-align:center; border-bottom:1px solid var(--color-border);">NeRFify (Ours)</th>
+            <th colspan="3" style="text-align:center; border-bottom:1px solid var(--color-border);">NERFIFY (Ours)</th>
           </tr>
           <tr>
             <th>PSNR&#8593;</th><th>SSIM&#8593;</th><th>LPIPS&#8595;</th>
@@ -932,7 +932,7 @@
     </div>
 
     <h3>Multi-Agent Baseline Comparison</h3>
-    <p class="table-subtitle">Semantic implementation scores and trainability across code generation systems. Only NeRFify consistently produces trainable NeRF plugins.</p>
+    <p class="table-subtitle">Semantic implementation scores and trainability across code generation systems. Only NERFIFY consistently produces trainable NeRF plugins.</p>
 
     <div class="table-wrapper">
       <table>
@@ -943,7 +943,7 @@
             <th colspan="2" style="text-align:center;">ChatDev</th>
             <th colspan="2" style="text-align:center;">MetaGPT</th>
             <th colspan="2" style="text-align:center;">DeepCode</th>
-            <th colspan="2" style="text-align:center;">NeRFify</th>
+            <th colspan="2" style="text-align:center;">NERFIFY</th>
           </tr>
           <tr>
             <th></th>
@@ -1007,7 +1007,7 @@
   <div class="container fade-in">
     <div class="section-label">Ablation Study</div>
     <h2>Every Component Matters</h2>
-    <p>We systematically ablate each component of NeRFify to quantify its contribution. The results confirm the importance of domain knowledge, compositional reasoning, iterative validation, and visual refinement.</p>
+    <p>We systematically ablate each component of NERFIFY to quantify its contribution. The results confirm the importance of domain knowledge, compositional reasoning, iterative validation, and visual refinement.</p>
 
     <div class="table-wrapper">
       <table>
@@ -1022,7 +1022,7 @@
         </thead>
         <tbody>
           <tr style="font-weight:600;">
-            <td>NeRFify (Full)</td>
+            <td>NERFIFY (Full)</td>
             <td>0.98</td>
             <td>100</td>
             <td>1.00</td>
@@ -1088,11 +1088,11 @@
 <section>
   <div class="container-wide fade-in">
     <div class="section-label">Benchmark</div>
-    <h2>NeRFifyBench: 30 Papers, Four Categories</h2>
-    <p>We contribute NeRFifyBench, the first evaluation framework specifically designed for NeRF paper-to-code synthesis. Papers are curated to cover diverse architectural innovations, training strategies, and integration complexity.</p>
+    <h2>NERFIFYBench: 30 Papers, Four Categories</h2>
+    <p>We contribute NERFIFYBench, the first evaluation framework specifically designed for NeRF paper-to-code synthesis. Papers are curated to cover diverse architectural innovations, training strategies, and integration complexity.</p>
 
     <div class="figure fig-medium">
-      <img src="./static/images/nerfifybench_categories.png" alt="Categorization of NeRF Papers by Integrability in Nerfstudio framework">
+      <img src="./static/images/NERFIFYbench_categories.png" alt="Categorization of NeRF Papers by Integrability in Nerfstudio framework">
       <div class="figure-caption"><strong>Figure 7.</strong> Categorization of NeRF papers by integrability in Nerfstudio. Papers are grouped by implementation difficulty. <strong>Category 1:</strong> Directly integrable methods modifying architecture, rendering, or losses. <strong>Category 2:</strong> Methods requiring pretrained models (CLIP, diffusion, SLAM) with substantial engineering effort. <strong>Category 3:</strong> Out-of-scope works where NeRF serves different objectives.</div>
     </div>
 
@@ -1133,8 +1133,8 @@
     <h2>BibTeX</h2>
 
     <div class="bibtex-block" id="bibtex">
-      <button class="copy-btn" onclick="copyBibtex()">Copy</button>@inproceedings{jain2026nerfify,
-  title     = {NeRFify: A Multi-Agent Framework for Turning NeRF Papers into Code},
+      <button class="copy-btn" onclick="copyBibtex()">Copy</button>@inproceedings{jain2026NERFIFY,
+  title     = {NERFIFY: A Multi-Agent Framework for Turning NeRF Papers into Code},
   author    = {Jain, Seemandhar and Gupta, Keshav and Gupta, Kunal and Chandraker, Manmohan},
   booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
   year      = {2026}
