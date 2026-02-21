@@ -1,4 +1,17 @@
 <!DOCTYPE html>
+<!--
+  NeRFify Project Page — CVPR 2026
+  
+  Place the following images in ./static/images/ :
+  
+    1. overview.png          — Figure 1 from main paper (teaser/overview diagram)
+    2. pipeline.png          — Figure 2 from main paper (full 4-stage pipeline)
+    3. citation_graph.png    — Figure 3 from main paper (K-Planes dependency graph)
+    4. got_synthesis.png     — Figure 4 from main paper (GoT multi-agent code synthesis)
+    5. visual_comparison_1.png — Figure 5 from main paper (GT vs Expert vs NeRFify: KeyNeRF, mi-MLP, Anisotropic, ERS, TVNeRF)
+    6. visual_comparison_2.png — Figure 1+2 from supplementary (GT vs Human vs NeRFify: LiNeRF, mi-MLP, NeRF-ID, TVNeRF)
+    7. nerfifybench_categories.png — Figure 3 from supplementary (paper categorization Venn/grouping diagram)
+-->
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -584,6 +597,11 @@
     <strong>TL;DR</strong> &mdash; NeRFify uses six specialized AI agents to read a NeRF research paper, recover all its implicit dependencies from cited work, and synthesize a complete Nerfstudio plugin that trains, converges, and matches expert-written code within &plusmn;0.5 dB PSNR. It works on papers that have <em>no public code</em>, reducing implementation time from weeks to hours.
   </div>
 
+  <div class="figure" style="margin-top:48px;">
+    <img src="./static/images/overview.png" alt="NeRFify Overview: Manual NeRF implementation requires weeks of specialized effort. Existing paper-to-code systems fail to produce trainable code. NeRFify automates this through grammar-constrained synthesis and compositional citation recovery." style="max-width:800px;">
+    <div class="figure-caption"><strong>Figure 1.</strong> Manual NeRF implementation requires weeks of specialized effort (left). Existing paper-to-code systems fail to produce trainable code. NeRFify automates this process through grammar-constrained synthesis and compositional citation recovery, generating fully trainable Nerfstudio plugins in hours (right).</div>
+  </div>
+
   <div class="stats-row">
     <div class="stat-card fade-in">
       <div class="stat-number">100%</div>
@@ -663,6 +681,11 @@
     <h2>Four-Stage Pipeline</h2>
     <p>NeRFify converts NeRF papers into executable code through four coordinated stages, each addressing a specific challenge in automated code synthesis for complex vision systems.</p>
 
+    <div class="figure">
+      <img src="./static/images/pipeline.png" alt="NeRFify four-stage pipeline: CFG Formalization, Compositional Dependency Resolution, GoT Code Synthesis, Visual-Driven Feedback" style="max-width:100%;">
+      <div class="figure-caption"><strong>Figure 2.</strong> NeRFify converts NeRF papers into code through four stages: (1) Agent parses and summarizes PDFs into structured markdown; CFG from Nerfstudio and curated paper-code pairs serve as in-context examples saved in K. (2) Compositional dependency resolution traverses citation graphs to retrieve missing components from referenced papers. (3) GoT code synthesis generates repository files through specialized agents operating in topological order. (4) Visual refinement iteratively patches artifacts until achieving expert-level quality.</div>
+    </div>
+
     <div class="method-stages">
       <div class="stage-card">
         <div class="stage-num">Stage 1</div>
@@ -684,6 +707,16 @@
         <h4>Visual-Driven Feedback</h4>
         <p>The critique agent diagnoses artifacts through PSNR-minima analysis, geometric validation, and VLM-guided patching, iteratively refining quality until convergence.</p>
       </div>
+    </div>
+
+    <div class="figure" style="margin-top:48px;">
+      <img src="./static/images/citation_graph.png" alt="NeRF citation dependency graphs showing K-Planes requires components from 7 direct dependencies and 12 total papers" style="max-width:720px;">
+      <div class="figure-caption"><strong>Figure 3.</strong> NeRF citation dependency graphs. Implementing K-Planes requires retrieving components from 7 direct dependencies (Plenoxels, TensoRF, Instant-NGP, Mip-NeRF 360, DyNeRF, EG3D, NeRF-W) and 12 total papers with transitive dependencies. Our compositional citation recovery automatically traverses such graphs to identify and retrieve all necessary components.</div>
+    </div>
+
+    <div class="figure">
+      <img src="./static/images/got_synthesis.png" alt="Graph-of-Thought Multi-Agent Code Synthesis showing progressive file generation through DAG construction, interface freezing, implementation, and integration testing" style="max-width:100%;">
+      <div class="figure-caption"><strong>Figure 4.</strong> Graph-of-Thought (GoT) Multi-Agent Code Synthesis. The master agent orchestrates specialized file-agents that progressively build a NeRF repository. Each step shows files being created or modified through four phases: DAG Construction maps papers to Nerfstudio component dependencies, Interface Freeze establishes API contracts in topological order, Implementation generates validated code with shape/gradient checks, and Integration Testing runs smoke tests with automated repair.</div>
     </div>
   </div>
 </section>
@@ -817,6 +850,16 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="figure" style="margin-top:40px;">
+      <img src="./static/images/visual_comparison_1.png" alt="Visual comparison of Ground Truth, Expert Implementation, and NeRFify output across KeyNeRF, mi-MLP NeRF, Anisotropic NeRF, ERS, and TVNeRF" style="max-width:100%;">
+      <div class="figure-caption"><strong>Figure 5.</strong> Visual comparison of NeRFify and human expert implementations on Set 1 (never-implemented papers). <strong>Left:</strong> Ground Truth. <strong>Middle:</strong> Expert Implementation. <strong>Right:</strong> NeRFify. Our system reproduces fine details including specular highlights, geometric edges, and texture patterns, matching expert-level visual quality.</div>
+    </div>
+
+    <div class="figure">
+      <img src="./static/images/visual_comparison_2.png" alt="Additional visual comparisons showing LiNeRF, mi-MLP NeRF, NeRF-ID, and TVNeRF results" style="max-width:100%;">
+      <div class="figure-caption"><strong>Figure 6.</strong> Extended qualitative comparisons from NeRFifyBench Set 1. <strong>Left:</strong> Ground Truth. <strong>Middle:</strong> Expert Implementation. <strong>Right:</strong> NeRFify. Across diverse scene types and NeRF architectures, NeRFify consistently achieves rendering quality comparable to expert human implementations.</div>
     </div>
 
     <h3>Sets 2 &amp; 3: Comparison with Existing Implementations</h3>
@@ -1005,6 +1048,11 @@
     <div class="section-label">Benchmark</div>
     <h2>NeRFifyBench: 30 Papers, Four Categories</h2>
     <p>We contribute NeRFifyBench, the first evaluation framework specifically designed for NeRF paper-to-code synthesis. Papers are curated to cover diverse architectural innovations, training strategies, and integration complexity.</p>
+
+    <div class="figure">
+      <img src="./static/images/nerfifybench_categories.png" alt="Categorization of NeRF Papers by Integrability in Nerfstudio framework" style="max-width:780px;">
+      <div class="figure-caption"><strong>Figure 7.</strong> Categorization of NeRF papers by integrability in Nerfstudio. Papers are grouped by implementation difficulty. <strong>Category 1:</strong> Directly integrable methods modifying architecture, rendering, or losses. <strong>Category 2:</strong> Methods requiring pretrained models (CLIP, diffusion, SLAM) with substantial engineering effort. <strong>Category 3:</strong> Out-of-scope works where NeRF serves different objectives.</div>
+    </div>
 
     <div class="bench-grid">
       <div class="bench-cat">
