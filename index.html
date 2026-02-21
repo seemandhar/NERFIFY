@@ -10,7 +10,7 @@
     4. got_synthesis.png     — Figure 4 from main paper (GoT multi-agent code synthesis)
     5. visual_comparison_1.png — Figure 5 from main paper (GT vs Expert vs NERFIFY: KeyNeRF, mi-MLP, Anisotropic, ERS, TVNeRF)
     6. visual_comparison_2.png — Figure 1+2 from supplementary (GT vs Human vs NERFIFY: LiNeRF, mi-MLP, NeRF-ID, TVNeRF)
-    7. NERFIFYbench_categories.png — Figure 3 from supplementary (paper categorization Venn/grouping diagram)
+    7. NERFIFY-BENCH_categories.png — Figure 3 from supplementary (paper categorization Venn/grouping diagram)
 -->
 <html lang="en">
 <head>
@@ -659,7 +659,7 @@
     </div>
     <div class="stat-card fade-in">
       <div class="stat-number">30</div>
-      <div class="stat-label">Papers in<br>NERFIFYBench</div>
+      <div class="stat-label">Papers in<br>NERFIFY-BENCH</div>
     </div>
   </div>
 </header>
@@ -674,7 +674,7 @@
       Neural radiance field (NeRF) research has expanded rapidly, creating a critical bottleneck: most papers ship without code, forcing researchers to spend weeks reimplementing methods before building upon them. We introduce <strong>NERFIFY</strong>, a multi-agent framework that converts NeRF research papers into trainable Nerfstudio plugins with 100% success rate, while baselines like Paper2Code, AutoP2C, and GPT-5 fail 95% of the time to produce runnable code.
     </p>
     <p>
-      Unlike generic paper-to-code systems that prioritize breadth, NERFIFY achieves domain-specific executability through six key innovations: context-free grammar formalization of Nerfstudio, Graph-of-Thought multi-agent synthesis, compositional citation recovery, closed-loop visual refinement, agentic knowledge enhancement, and the NERFIFYBench evaluation framework. On research papers without public implementations, NERFIFY achieves visual quality matching expert human code (&plusmn;0.5 dB PSNR, &plusmn;0.02 SSIM) while reducing implementation time from weeks to hours.
+      Unlike generic paper-to-code systems that prioritize breadth, NERFIFY achieves domain-specific executability through six key innovations: context-free grammar formalization of Nerfstudio, Graph-of-Thought multi-agent synthesis, compositional citation recovery, closed-loop visual refinement, agentic knowledge enhancement, and the NERFIFY-BENCH evaluation framework. On research papers without public implementations, NERFIFY achieves visual quality matching expert human code (&plusmn;0.5 dB PSNR, &plusmn;0.02 SSIM) while reducing implementation time from weeks to hours.
     </p>
   </div>
 </section>
@@ -708,7 +708,7 @@
         <p>Beyond reproduction, NERFIFY identifies optimization opportunities in existing implementations, discovering missing regularizers and architectural refinements.</p>
       </div>
       <div class="innovation">
-        <h4>6. NERFIFYBench Benchmark</h4>
+        <h4>6. NERFIFY-BENCH Benchmark</h4>
         <p>The first evaluation framework for NeRF paper-to-code synthesis, covering 30 diverse papers across four distinct categories.</p>
       </div>
     </div>
@@ -769,7 +769,7 @@
   <div class="container-wide fade-in">
     <div class="section-label">Results</div>
     <h2>Experimental Evaluation</h2>
-    <p>We evaluate NERFIFY on the NERFIFYBench dataset of 30 diverse NeRF papers across four categories. All experiments are conducted on NVIDIA A6000 GPUs (48 GB) with 100k training iterations on Blender and DTU datasets.</p>
+    <p>We evaluate NERFIFY on the NERFIFY-BENCH dataset of 30 diverse NeRF papers across four categories. All experiments are conducted on NVIDIA A6000 GPUs (48 GB) with 100k training iterations on Blender and DTU datasets.</p>
 
     <h3>Executability Comparison</h3>
     <p class="table-subtitle">NERFIFY is the only system that consistently produces code that compiles, trains stably, and converges to paper-reported quality. All baselines fail to generate trainable code despite producing syntactically valid Python.</p>
@@ -901,7 +901,7 @@
 
     <div class="figure fig-wide">
       <img src="./static/images/visual_comparison_2.png" alt="Additional visual comparisons showing LiNeRF, mi-MLP NeRF, NeRF-ID, and TVNeRF results">
-      <div class="figure-caption"><strong>Figure 6.</strong> Extended qualitative comparisons from NERFIFYBench Set 1. <strong>Left:</strong> Ground Truth. <strong>Middle:</strong> Expert Implementation. <strong>Right:</strong> NERFIFY. Across diverse scene types and NeRF architectures, NERFIFY consistently achieves rendering quality comparable to expert human implementations.</div>
+      <div class="figure-caption"><strong>Figure 6.</strong> Extended qualitative comparisons from NERFIFY-BENCH Set 1. <strong>Left:</strong> Ground Truth. <strong>Middle:</strong> Expert Implementation. <strong>Right:</strong> NERFIFY. Across diverse scene types and NeRF architectures, NERFIFY consistently achieves rendering quality comparable to expert human implementations.</div>
     </div>
 
     <h3>Sets 2 &amp; 3: Comparison with Existing Implementations</h3>
@@ -1088,11 +1088,11 @@
 <section>
   <div class="container-wide fade-in">
     <div class="section-label">Benchmark</div>
-    <h2>NERFIFYBench: 30 Papers, Four Categories</h2>
-    <p>We contribute NERFIFYBench, the first evaluation framework specifically designed for NeRF paper-to-code synthesis. Papers are curated to cover diverse architectural innovations, training strategies, and integration complexity.</p>
+    <h2>NERFIFY-BENCH: 30 Papers, Four Categories</h2>
+    <p>We contribute NERFIFY-BENCH, the first evaluation framework specifically designed for NeRF paper-to-code synthesis. Papers are curated to cover diverse architectural innovations, training strategies, and integration complexity.</p>
 
     <div class="figure fig-medium">
-      <img src="./static/images/NERFIFYbench_categories.png" alt="Categorization of NeRF Papers by Integrability in Nerfstudio framework">
+      <img src="./static/images/nerfifybench_categories.png" alt="Categorization of NeRF Papers by Integrability in Nerfstudio framework">
       <div class="figure-caption"><strong>Figure 7.</strong> Categorization of NeRF papers by integrability in Nerfstudio. Papers are grouped by implementation difficulty. <strong>Category 1:</strong> Directly integrable methods modifying architecture, rendering, or losses. <strong>Category 2:</strong> Methods requiring pretrained models (CLIP, diffusion, SLAM) with substantial engineering effort. <strong>Category 3:</strong> Out-of-scope works where NeRF serves different objectives.</div>
     </div>
 
