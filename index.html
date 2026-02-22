@@ -497,15 +497,86 @@
 
     /* ── Footer ── */
     footer {
-      padding: 40px 24px;
+      padding: 48px 24px 40px;
       text-align: center;
+      border-top: 1px solid var(--color-border);
+      background: #f8f9fb;
+    }
+
+    .footer-inner {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .visit-counter {
+      margin-bottom: 4px;
+    }
+
+    .visit-counter img {
+      height: 24px;
+      border-radius: 4px;
+    }
+
+    .footer-divider {
+      width: 48px;
+      height: 1px;
+      background: var(--color-border);
+      margin: 24px auto;
+    }
+
+    .template-credit {
+      margin-bottom: 4px;
+    }
+
+    .template-line {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 14px;
+    }
+
+    .template-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      color: #fff;
+      background: #24292f;
+      transition: all 0.2s ease;
+      border: 1.5px solid #24292f;
+    }
+
+    .template-btn:hover {
+      background: #1a1e23;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+
+    .template-btn i:first-child { font-size: 17px; }
+
+    .template-desc {
+      margin-top: 12px;
       font-size: 13px;
       color: var(--color-text-secondary);
-      border-top: 1px solid var(--color-border);
+      line-height: 1.5;
+    }
+
+    .footer-legal {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 0;
     }
 
     footer a { color: var(--color-accent); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
+
+    .footer-legal a { color: #888; }
+    .footer-legal a:hover { color: var(--color-accent); }
 
     /* ── Benchmark categories ── */
     .bench-grid {
@@ -1298,6 +1369,36 @@
 </section>
 
 
+<!-- ════════════════════ FOOTER ════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <!-- Visit Counter -->
+    <div class="visit-counter">
+      <img src="https://visitor-badge.laobi.icu/badge?page_id=seemandhar.nerfify&left_color=%23444&right_color=%232563eb&left_text=Visitors" alt="Visitor Count">
+    </div>
+
+    <div class="footer-divider"></div>
+
+    <!-- Template Credit -->
+    <div class="template-credit">
+      <p class="template-line">Want a project page like this?</p>
+      <a href="https://github.com/seemandhar/nerfify-template" target="_blank" class="template-btn">
+        <i class="fab fa-github"></i>
+        <span>Use this template</span>
+        <i class="fas fa-arrow-right" style="font-size:11px;opacity:0.6;"></i>
+      </a>
+      <p class="template-desc">Free, responsive, built for CVPR / ICCV / ECCV / NeurIPS project pages. Just clone, edit, and deploy.</p>
+    </div>
+
+    <div class="footer-divider"></div>
+
+    <p class="footer-legal">
+      Website template by <a href="https://seemandhar.github.io/" target="_blank">Seemandhar Jain</a>,
+      adapted from <a href="https://nerfies.github.io" target="_blank">Nerfies</a>.
+      Licensed under <a href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a>.
+    </p>
+  </div>
+</footer>
 
 
 <!-- ════════════════════ PDF VIEWER MODAL ════════════════════ -->
