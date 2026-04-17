@@ -686,36 +686,42 @@ function setBrain(text, sub){
   if(sub) $('brainSub').textContent = sub;
 }
 
+// Token counter is driven by pipeline progress (0% → 100% maps to 0 → TOK_TARGET).
+// A smooth interpolator catches up to the target with small jittered ticks so the
+// displayed number visibly counts up rather than snapping.
 let tokCount = 0;
-const TOK_CAP = 900_000;
+let tokTarget = 0;
+const TOK_TARGET = 900_000;
 function renderTokCount(){
-  const n = tokCount;
+  const n = Math.round(tokCount);
   let s;
   if(n >= 1_000_000) s = (n/1_000_000).toFixed(2)+'M';
   else if(n >= 1_000) s = (n/1_000).toFixed(1)+'K';
   else s = String(n);
   $('tokCount').textContent = s;
 }
-function bumpTokens(n){
-  if(tokCount >= TOK_CAP) return;
-  tokCount = Math.min(TOK_CAP, tokCount + n);
-  renderTokCount();
+// kept for compatibility — small per-event bumps just nudge the target forward
+// inside the budget; final cap stays at TOK_TARGET via setTokensForProgress.
+function bumpTokens(_n){ /* no-op: tokens are progress-driven */ }
+function setTokensForProgress(pct){
+  tokTarget = Math.min(TOK_TARGET, Math.round((pct/100) * TOK_TARGET));
 }
-
-// Background streaming: simulate the agent burning through context (~1M total)
-let streamTimer = null, streamRate = 0;  // tokens per tick (60ms)
-function setStreamRate(r){ streamRate = r; }
+let tokTicker = null;
 function startTokenStream(){
-  if(streamTimer) return;
-  streamTimer = setInterval(()=>{
-    if(streamRate>0){
-      // jitter ±20%
-      const jitter = streamRate * (0.8 + Math.random()*0.4);
-      bumpTokens(Math.round(jitter));
+  if(tokTicker) return;
+  tokTicker = setInterval(()=>{
+    if(tokCount < tokTarget){
+      // ease toward target — bigger steps when far away
+      const diff = tokTarget - tokCount;
+      const step = Math.max(50, diff * 0.04 * (0.7 + Math.random()*0.6));
+      tokCount = Math.min(tokTarget, tokCount + step);
+      renderTokCount();
     }
   }, 60);
 }
-function stopTokenStream(){ if(streamTimer){ clearInterval(streamTimer); streamTimer=null; } }
+function stopTokenStream(){ if(tokTicker){ clearInterval(tokTicker); tokTicker=null; } }
+// no-op shim — old code calls setStreamRate at every stage; ignored now
+function setStreamRate(_){}
 
 function addToken(text, kind, icon){
   const t = document.createElement('div');
@@ -797,7 +803,10 @@ function setPage(n,total){
   $('pageNo').textContent = `${n} / ${total||PDF_TOTAL_PAGES}`;
   scrollPaperToPage(n);
 }
-function setProgress(pct){ $('genProgress').style.setProperty('--p', pct+'%'); }
+function setProgress(pct){
+  $('genProgress').style.setProperty('--p', pct+'%');
+  setTokensForProgress(pct);
+}
 
 const codeEl = $('code');
 const gutterEl = $('gutter');
@@ -1178,16 +1187,13 @@ async function start(){
   setStep('render','done');
 
   setBrain('All stages complete', 'DrJohnson · 31.4 PSNR · 8 files · 1 fix iter');
-  // pin final readout into the 700K–850K band
-  setStreamRate(0);
-  const target = 720_000 + Math.floor(Math.random()*120_000);
-  if(tokCount < target){
-    bumpTokens(target - tokCount);
-  }
+  // pin to full budget at completion
+  setTokensForProgress(100);
   $('finalCard').classList.add('show');
   $('replay').classList.add('show');
   $('footMsg').textContent = 'orchestrator → done ✓';
-  stopTokenStream();
+  // let the interpolator finish catching up to TOK_TARGET, then halt
+  setTimeout(stopTokenStream, 2500);
   stopTimer();
 }
 
@@ -1206,9 +1212,8 @@ $('replay').addEventListener('click', ()=>{
   $('roMeta').innerHTML = 'iter 3000 · PSNR <span class="v">22.4</span>';
   $('tokens').innerHTML='';
   $('thoughts').innerHTML='';
-  tokCount=0; renderTokCount();
+  tokCount=0; tokTarget=0; renderTokCount();
   stopTokenStream();
-  setStreamRate(0);
   document.querySelectorAll('.pstep').forEach(el=>el.classList.remove('active','done'));
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('done'));
   switchTab('field');
