@@ -3,1565 +3,877 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Splatify — Paper2Code + Knowledge Discovery</title>
+<title>Nerfify — Paper → Code, Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#ffffff;--bg2:#f8fafc;--bg3:#f1f5f9;
-  --cyan:#0284c7;--green:#059669;--red:#dc2626;--amber:#d97706;
-  --purple:#7c3aed;--pink:#db2777;--indigo:#4f46e5;--gold:#ca8a04;
-  --text:#1e293b;--dim:#64748b;--muted:#94a3b8;--border:#e2e8f0;
-  --font-ui:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --font-mono:'SF Mono','Cascadia Code','Fira Code','JetBrains Mono',Consolas,monospace;
+  --bg:#0a0e1a;--bg2:#0f1424;--bg3:#161c30;--panel:#10162a;--panel2:#141b33;
+  --border:#1f2942;--border2:#2a3656;
+  --text:#e6ecff;--dim:#8a96b8;--muted:#5a6688;
+  --cyan:#22d3ee;--purple:#a855f7;--pink:#ec4899;--green:#10b981;--amber:#f59e0b;--red:#ef4444;--blue:#3b82f6;--indigo:#6366f1;
+  --font-ui:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono','SF Mono',Consolas,monospace;
+  --glow-cyan:0 0 24px rgba(34,211,238,.45);
+  --glow-purple:0 0 24px rgba(168,85,247,.45);
+  --glow-pink:0 0 24px rgba(236,72,153,.45);
 }
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-ui)}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-ui);overflow:hidden;-webkit-font-smoothing:antialiased}
 
-/* ═══ AMBIENT BACKGROUND ═══ */
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:
-    radial-gradient(ellipse 80% 60% at 15% 50%,rgba(124,58,237,.05),transparent),
-    radial-gradient(ellipse 60% 50% at 85% 40%,rgba(219,39,119,.04),transparent),
-    radial-gradient(ellipse 50% 40% at 50% 90%,rgba(2,132,199,.04),transparent)}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    radial-gradient(ellipse 70% 50% at 12% 20%,rgba(168,85,247,.18),transparent 60%),
+    radial-gradient(ellipse 60% 50% at 88% 80%,rgba(34,211,238,.16),transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%,rgba(236,72,153,.06),transparent 70%);
+  animation:bgPulse 12s ease-in-out infinite alternate}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;
   background-image:
-    linear-gradient(rgba(148,163,184,.08) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(148,163,184,.08) 1px,transparent 1px);
-  background-size:48px 48px;animation:gridDrift 60s linear infinite}
+    linear-gradient(rgba(31,41,66,.55) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(31,41,66,.55) 1px,transparent 1px);
+  background-size:40px 40px;mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black 30%,transparent 90%)}
+@keyframes bgPulse{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(20deg)}}
 
-/* ═══ INTRO ═══ */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--cyan);
+  box-shadow:0 0 10px currentColor;opacity:0;animation:floatUp 14s linear infinite}
+.particle:nth-child(2n){background:var(--purple);animation-duration:18s}
+.particle:nth-child(3n){background:var(--pink);animation-duration:22s}
+@keyframes floatUp{
+  0%{opacity:0;transform:translateY(110vh) translateX(0) scale(0)}
+  10%{opacity:.6;transform:translateY(90vh) translateX(20px) scale(1)}
+  90%{opacity:.6;transform:translateY(10vh) translateX(-30px) scale(1)}
+  100%{opacity:0;transform:translateY(-10vh) translateX(0) scale(0)}
+}
+
 #intro{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:var(--bg);z-index:100;transition:opacity 1s ease;overflow:hidden}
-.intro-splats{position:absolute;inset:0;pointer-events:none}
-.splat{position:absolute;border-radius:50%;filter:blur(20px);opacity:0;
-  animation:splatPop 2.2s cubic-bezier(.22,1,.36,1) forwards}
-#intro h1{font-size:clamp(3.5rem,9vw,7rem);font-weight:900;letter-spacing:-3px;position:relative;z-index:1;
-  background:linear-gradient(135deg,var(--purple) 0%,var(--pink) 45%,var(--cyan) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  opacity:0;transform:translateY(20px) scale(.95);animation:introTitle 1s .2s cubic-bezier(.22,1,.36,1) forwards}
-#intro p{font-size:1.15rem;color:var(--dim);letter-spacing:.5px;position:relative;z-index:1;
-  opacity:0;animation:fadeUp .8s .7s ease forwards}
-#intro .sub2{font-size:.78rem;color:var(--muted);margin-top:.4rem;font-family:var(--font-mono);letter-spacing:1.5px;
-  opacity:0;animation:fadeUp .8s .95s ease forwards}
-.intro-bar{display:flex;gap:4px;margin-top:2.2rem;opacity:0;animation:fadeUp .5s 1.2s ease forwards;position:relative;z-index:1}
-.intro-bar span{width:24px;height:3px;border-radius:2px;background:var(--purple);
-  animation:barPulse 1.5s ease infinite;opacity:.3}
-.intro-bar span:nth-child(2){animation-delay:.15s;background:var(--pink)}
-.intro-bar span:nth-child(3){animation-delay:.3s;background:var(--cyan)}
-.intro-bar span:nth-child(4){animation-delay:.45s;background:var(--indigo)}
-.intro-bar span:nth-child(5){animation-delay:.6s;background:var(--green)}
+  background:radial-gradient(ellipse at center,#161c30 0%,#0a0e1a 70%);z-index:200;transition:opacity .8s ease}
+#intro.hide{opacity:0;pointer-events:none}
+#intro .glow{position:absolute;width:520px;height:520px;border-radius:50%;filter:blur(120px);opacity:.5;
+  background:conic-gradient(from 0deg,var(--cyan),var(--purple),var(--pink),var(--cyan));
+  animation:rotateGlow 8s linear infinite}
+#intro h1{font-size:clamp(3.5rem,9vw,7.5rem);font-weight:900;letter-spacing:-4px;position:relative;z-index:1;
+  background:linear-gradient(135deg,var(--cyan) 0%,var(--purple) 50%,var(--pink) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:0;transform:translateY(20px) scale(.95);animation:introTitle 1s .15s cubic-bezier(.22,1,.36,1) forwards;
+  filter:drop-shadow(0 0 40px rgba(168,85,247,.4))}
+#intro .tag{font-family:var(--font-mono);font-size:.78rem;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:1.4rem;opacity:0;animation:fadeUp .7s .05s ease forwards;position:relative;z-index:1}
+#intro p{font-size:1.1rem;color:var(--dim);letter-spacing:.4px;position:relative;z-index:1;margin-top:.6rem;
+  opacity:0;animation:fadeUp .8s .65s ease forwards;text-align:center;max-width:560px;line-height:1.6}
+.intro-bar{display:flex;gap:5px;margin-top:2.4rem;opacity:0;animation:fadeUp .5s 1.05s ease forwards;position:relative;z-index:1}
+.intro-bar span{width:30px;height:3px;border-radius:2px;background:var(--cyan);opacity:.25;
+  animation:barPulse 1.4s ease infinite}
+.intro-bar span:nth-child(2){animation-delay:.12s;background:var(--purple)}
+.intro-bar span:nth-child(3){animation-delay:.24s;background:var(--pink)}
+.intro-bar span:nth-child(4){animation-delay:.36s;background:var(--cyan)}
+.intro-bar span:nth-child(5){animation-delay:.48s;background:var(--purple)}
+@keyframes rotateGlow{to{transform:rotate(360deg)}}
+@keyframes introTitle{to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes barPulse{0%,100%{opacity:.25;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.6)}}
 
-/* ═══ APP LAYOUT ═══ */
-#app{display:none;flex-direction:column;height:100vh;opacity:0;transition:opacity .8s ease;position:relative;z-index:1}
-header{display:flex;align-items:center;padding:0 1.5rem;height:44px;
-  border-bottom:1px solid var(--border);flex-shrink:0;
-  background:rgba(255,255,255,.88);backdrop-filter:blur(12px)}
-.logo{font-size:1rem;font-weight:800;letter-spacing:-.5px;
-  background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.logo-tag{font-size:.55rem;font-weight:600;color:var(--muted);margin-left:.5rem;letter-spacing:1.2px;
-  padding:2px 6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font-mono)}
-.header-sep{width:1px;height:20px;background:var(--border);margin:0 1rem}
-.header-spacer{flex:1}
-.hm{display:flex;gap:1.4rem;font-size:.7rem;color:var(--dim);font-family:var(--font-mono)}
-.hm span{display:flex;align-items:center;gap:.35rem}
-.hm .v{color:var(--text);font-weight:600}
-.timer{font-family:var(--font-mono);font-size:.8rem;color:var(--purple);min-width:72px;text-align:right;font-weight:600}
+#app{display:none;flex-direction:column;height:100vh;opacity:0;transition:opacity 1s ease;position:relative;z-index:1}
+#app.show{display:flex;opacity:1}
 
-/* ═══ ORCHESTRATOR ═══ */
-#orch{display:flex;align-items:center;gap:.5rem;padding:.3rem 1.5rem;height:28px;
-  font-size:.72rem;color:var(--dim);border-bottom:1px solid var(--border);
-  background:var(--bg2);flex-shrink:0;transition:all .4s;overflow:hidden}
-#orch.glow{color:var(--purple);background:rgba(124,58,237,.06)}
-#orch.discovery{color:var(--pink);background:rgba(219,39,119,.07)}
-#orch .o-icon{font-size:.85rem}
-#orch .o-tag{font-weight:700;color:var(--indigo);font-size:.7rem;letter-spacing:.3px}
+header{display:flex;align-items:center;padding:0 1.4rem;height:56px;flex-shrink:0;
+  border-bottom:1px solid var(--border);background:rgba(15,20,36,.7);backdrop-filter:blur(16px);position:relative;z-index:10}
+.logo{display:flex;align-items:center;gap:.6rem;font-size:1.05rem;font-weight:800;letter-spacing:-.5px}
+.logo-mark{width:28px;height:28px;border-radius:8px;background:conic-gradient(from 180deg,var(--cyan),var(--purple),var(--pink),var(--cyan));
+  box-shadow:0 0 16px rgba(168,85,247,.5);position:relative;display:flex;align-items:center;justify-content:center;
+  animation:logoSpin 6s linear infinite}
+.logo-mark::after{content:'';position:absolute;inset:5px;border-radius:5px;background:var(--bg2)}
+.logo-mark::before{content:'N';position:absolute;z-index:1;font-size:.85rem;font-weight:900;
+  background:linear-gradient(135deg,var(--cyan),var(--pink));-webkit-background-clip:text;color:transparent}
+.logo-text{background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;color:transparent}
+@keyframes logoSpin{to{transform:rotate(360deg)}}
 
-/* ═══ PIPELINE ═══ */
-#pipeline{position:relative;height:172px;flex-shrink:0;border-bottom:1px solid var(--border);
-  background:var(--bg2)}
-#pipeline svg{position:absolute;inset:0;width:100%;height:100%}
-.edge{fill:none;stroke:var(--border);stroke-width:1.5;transition:all .6s ease}
-.edge.active{stroke:var(--purple);stroke-width:2;stroke-dasharray:8 4;
-  animation:edgeFlow .7s linear infinite;filter:drop-shadow(0 0 2px rgba(124,58,237,.25))}
-.edge.discovery.active{stroke:var(--pink);filter:drop-shadow(0 0 2px rgba(219,39,119,.3))}
-.edge.done{stroke:var(--green);stroke-width:1.5;stroke-dasharray:none;filter:none}
-.edge.loop{stroke-dasharray:4 3}
-.svg-label{font-size:9px;fill:var(--amber);font-family:var(--font-mono);opacity:0;transition:opacity .5s}
-.svg-label.show{opacity:.9}
-.phase-label{font-size:10px;font-weight:700;font-family:var(--font-mono);opacity:.55;letter-spacing:1px}
+.h-divider{width:1px;height:22px;background:var(--border2);margin:0 1.1rem}
+.crumbs{display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--dim);font-family:var(--font-mono)}
+.crumbs .arrow{color:var(--muted)}
+.crumbs .current{color:var(--cyan);font-weight:600}
+.spacer{flex:1}
+.h-stats{display:flex;gap:1.2rem;font-family:var(--font-mono);font-size:.7rem;color:var(--muted)}
+.h-stats .stat{display:flex;align-items:center;gap:.4rem}
+.h-stats .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px currentColor;animation:dotPulse 1.6s ease-in-out infinite}
+.h-stats .v{color:var(--text);font-weight:600}
+.timer{font-family:var(--font-mono);font-size:.85rem;color:var(--cyan);min-width:64px;text-align:right;font-weight:700;
+  text-shadow:0 0 12px rgba(34,211,238,.4)}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.6}}
 
-/* ═══ NODES ═══ */
-.nd{position:absolute;transform:translate(-50%,-50%);width:100px;text-align:center;
-  cursor:default;transition:all .5s cubic-bezier(.22,1,.36,1);opacity:0}
-.nd.vis{opacity:.4}
-.nd.active,.nd.done,.nd.err{opacity:1}
-.nc{background:#fff;border:1.5px solid var(--border);border-radius:11px;padding:7px 6px;position:relative;
-  transition:all .4s ease;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.nd.active .nc{border-color:var(--purple);
-  box-shadow:0 0 0 3px rgba(124,58,237,.14),0 2px 8px rgba(124,58,237,.18)}
-.nd.discovery.active .nc{border-color:var(--pink);
-  box-shadow:0 0 0 3px rgba(219,39,119,.14),0 2px 8px rgba(219,39,119,.2)}
-.nd.done .nc{border-color:var(--green);box-shadow:0 0 0 3px rgba(5,150,105,.1)}
-.nd.err .nc{border-color:var(--red);box-shadow:0 0 0 3px rgba(220,38,38,.12);animation:shake .4s}
-.nd.champ .nc{border-color:var(--gold);background:linear-gradient(145deg,#fffbea,#fff);
-  box-shadow:0 0 0 3px rgba(202,138,4,.18),0 2px 12px rgba(202,138,4,.22)}
-.nd .ic{font-size:1.15rem;line-height:1}
-.nd .lb{font-size:.65rem;font-weight:600;margin-top:2px;white-space:nowrap;color:var(--text)}
-.nd .ds{font-size:.5rem;color:var(--dim);margin-top:1px;white-space:nowrap}
-.nd .st{position:absolute;bottom:-13px;left:50%;transform:translateX(-50%);font-size:.55rem;
-  font-family:var(--font-mono);white-space:nowrap;transition:all .3s}
-.nd.active .st{color:var(--purple)}.nd.done .st{color:var(--green)}.nd.err .st{color:var(--red)}
-.nd.discovery.active .st{color:var(--pink)}.nd.champ .st{color:var(--gold)}
-.spinner{position:absolute;inset:-3px;border-radius:14px;border:2px solid transparent;
-  border-top-color:var(--purple);opacity:0;transition:opacity .3s}
-.nd.discovery .spinner{border-top-color:var(--pink)}
-.nd.active .spinner{opacity:.7;animation:spin .8s linear infinite}
-.nd.done .nc::after{content:'';position:absolute;inset:-6px;border-radius:16px;
-  border:1.5px solid var(--green);opacity:0;animation:burst .6s ease-out forwards}
-.nd.champ .nc::after{content:'';position:absolute;inset:-8px;border-radius:18px;
-  border:1.5px solid var(--gold);animation:championPulse 2.2s ease-in-out infinite}
+.pipeline{display:flex;align-items:center;gap:.55rem;padding:.7rem 1.4rem;flex-shrink:0;
+  background:linear-gradient(180deg,rgba(20,27,51,.7),rgba(15,20,36,.4));border-bottom:1px solid var(--border)}
+.pstep{display:flex;align-items:center;gap:.45rem;padding:.4rem .75rem;border-radius:8px;
+  font-size:.72rem;font-family:var(--font-mono);font-weight:600;color:var(--muted);
+  background:rgba(20,27,51,.5);border:1px solid var(--border);transition:all .45s cubic-bezier(.22,1,.36,1);position:relative}
+.pstep .pi{width:18px;height:18px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:var(--muted);transition:all .4s}
+.pstep.active{color:var(--cyan);border-color:rgba(34,211,238,.5);background:rgba(34,211,238,.08);
+  box-shadow:0 0 0 1px rgba(34,211,238,.25),var(--glow-cyan);transform:translateY(-1px)}
+.pstep.active .pi{background:var(--cyan);color:#001;box-shadow:0 0 14px rgba(34,211,238,.7);animation:piSpin 1.5s ease-in-out infinite}
+.pstep.done{color:var(--green);border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.06)}
+.pstep.done .pi{background:var(--green);color:#001}
+.pstep.done .pi::after{content:'✓';font-weight:900}
+.pstep.active .pi::after{content:''}
+.parrow{color:var(--muted);font-size:.85rem;opacity:.5}
+.parrow.active{color:var(--cyan);opacity:1;animation:arrowSlide 1s ease-in-out infinite}
+@keyframes piSpin{0%,100%{transform:rotate(0)}50%{transform:rotate(180deg)}}
+@keyframes arrowSlide{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
 
-/* ═══ STAGE ═══ */
-#stage{flex:1;position:relative;overflow:hidden;background:var(--bg)}
-.sp{position:absolute;inset:0;padding:1rem 1.5rem;display:flex;gap:1rem;
-  opacity:0;pointer-events:none;transition:opacity .45s ease}
-.sp.on{opacity:1;pointer-events:auto}
-.stitle{font-size:.78rem;font-weight:700;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem;color:var(--text)}
-.stitle .mdl{font-size:.55rem;color:var(--muted);font-weight:400;margin-left:.3rem;font-family:var(--font-mono);letter-spacing:.5px}
+main{flex:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.85fr) minmax(0,1.25fr);
+  gap:1px;background:var(--border);overflow:hidden}
+.pane{background:var(--panel);display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden}
+.pane-head{display:flex;align-items:center;gap:.55rem;padding:.7rem 1rem;flex-shrink:0;
+  border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--panel2),transparent);position:relative;z-index:2}
+.pane-icon{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:900;color:#fff}
+.pane-icon.ic-paper{background:linear-gradient(135deg,#7c3aed,#ec4899);box-shadow:var(--glow-purple)}
+.pane-icon.ic-agent{background:linear-gradient(135deg,#22d3ee,#6366f1);box-shadow:var(--glow-cyan)}
+.pane-icon.ic-code{background:linear-gradient(135deg,#10b981,#22d3ee);box-shadow:0 0 24px rgba(16,185,129,.4)}
+.pane-title{font-size:.82rem;font-weight:700;letter-spacing:-.2px}
+.pane-sub{font-size:.66rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1.2px;margin-left:auto}
+.live-pill{display:inline-flex;align-items:center;gap:.3rem;padding:.18rem .5rem;border-radius:99px;
+  background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);font-size:.6rem;color:#fca5a5;
+  font-family:var(--font-mono);font-weight:700;letter-spacing:1px}
+.live-pill .ld{width:5px;height:5px;border-radius:50%;background:var(--red);animation:dotPulse 1s ease-in-out infinite;box-shadow:0 0 6px currentColor}
 
-/* ═══ PAPER ═══ */
-.paper{background:#fff;color:#1a1a1a;border-radius:10px;padding:2rem 2.2rem;max-width:540px;margin:auto;
-  font-family:'Times New Roman',Georgia,serif;box-shadow:0 4px 24px rgba(0,0,0,.1),0 0 0 1px var(--border);
-  transform:translateX(-80px) rotate(-1deg);opacity:0;transition:all .8s cubic-bezier(.22,1,.36,1);position:relative}
-.paper.show{transform:translateX(0) rotate(0);opacity:1}
-.paper h2{font-size:1.15rem;line-height:1.45;font-weight:700}
-.paper .au{font-size:.72rem;color:#777;margin:.4rem 0 .7rem}
-.paper .ab{font-size:.68rem;line-height:1.65;color:#555;border-left:3px solid #e0e0e0;padding-left:.8rem}
-.eqs{margin-top:.7rem;display:flex;flex-wrap:wrap;gap:.4rem}
-.eq{background:#f3e8ff;border:1px solid #d8b4fe;border-radius:4px;padding:2px 7px;
-  font-family:var(--font-mono);font-size:.6rem;color:#6b21a8;
-  opacity:0;transform:translateY(6px);transition:all .25s ease}
-.eq.on{opacity:1;transform:translateY(0)}
-.paper .tag{position:absolute;top:.7rem;right:.8rem;font-family:var(--font-mono);font-size:.55rem;
-  color:#64748b;background:#f1f5f9;padding:2px 6px;border-radius:3px}
+.paper-wrap{flex:1;position:relative;overflow:hidden;background:#fafbfc;
+  background-image:radial-gradient(circle at 50% 0,rgba(168,85,247,.04),transparent 50%)}
+.paper{position:absolute;inset:18px 22px;background:#fff;border-radius:6px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4),0 2px 6px rgba(0,0,0,.25);
+  overflow:hidden;color:#1a1f2e;font-family:'Times New Roman','Georgia',serif;font-size:9.5px;line-height:1.6;
+  padding:18px 22px}
+.paper-scroll{will-change:transform;transition:transform 1.4s cubic-bezier(.65,.05,.36,1)}
+.paper h2{font-size:14px;font-weight:700;text-align:center;margin-bottom:6px;color:#0f172a;letter-spacing:-.3px}
+.paper .authors{text-align:center;font-size:8px;color:#475569;font-style:italic;margin-bottom:14px}
+.paper .sec{font-weight:700;font-size:10.5px;color:#0f172a;margin:10px 0 4px}
+.paper .sec .num{color:#7c3aed;margin-right:6px;font-family:var(--font-mono);font-weight:600}
+.paper p{margin-bottom:7px;text-align:justify;text-indent:14px}
+.paper .abstract{font-style:italic;font-size:9px;background:#f8fafc;padding:8px 12px;border-left:3px solid #a855f7;margin-bottom:10px;border-radius:0 4px 4px 0}
+.paper .equation{text-align:center;margin:8px 0;font-family:'Cambria Math','STIX',serif;font-size:11.5px;font-style:italic;
+  padding:6px;background:linear-gradient(90deg,transparent,rgba(34,211,238,.05),transparent);border-radius:4px;position:relative}
+.paper .equation .lbl{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-style:normal;color:#64748b;font-size:8.5px;font-family:var(--font-mono)}
+.paper .figure{margin:10px auto;width:80%;height:60px;background:linear-gradient(135deg,#e0e7ff,#fce7f3,#cffafe);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;font-size:8px;color:#64748b;border:1px solid #e2e8f0;position:relative;overflow:hidden}
+.paper .figure::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent 0 8px,rgba(255,255,255,.4) 8px 10px)}
+.paper .ref{font-size:7.5px;color:#475569;margin:1.5px 0;text-indent:-14px;padding-left:14px}
+.paper code{font-family:var(--font-mono);font-size:8.5px;background:#f1f5f9;padding:1px 4px;border-radius:3px;color:#0f172a}
+.focus{background:linear-gradient(90deg,rgba(168,85,247,.2),rgba(236,72,153,.14) 50%,transparent);
+  border-radius:3px;animation:focusPulse 1.4s ease-in-out infinite;display:inline-block;padding:0 3px;box-shadow:0 0 0 1px rgba(168,85,247,.3)}
+@keyframes focusPulse{0%,100%{background-color:rgba(168,85,247,.18)}50%{background-color:rgba(168,85,247,.34)}}
 
-/* ═══ TERMINAL ═══ */
-.term{background:#1e293b;border:1px solid #334155;border-radius:10px;display:flex;
-  flex-direction:column;overflow:hidden;min-width:0}
-.term-h{display:flex;align-items:center;gap:5px;padding:7px 11px;background:#0f172a;border-bottom:1px solid #334155}
-.dot{width:9px;height:9px;border-radius:50%}
-.term-t{font-size:.62rem;color:#94a3b8;font-family:var(--font-mono);margin-left:6px}
-.term-b{padding:.7rem .9rem;font-family:var(--font-mono);font-size:.68rem;line-height:1.75;
-  overflow-y:auto;flex:1;color:#cbd5e1}
-.tc{color:#4ade80}.td{color:#64748b}.te{color:#f87171}.tw{color:#fbbf24}.tb{font-weight:600;color:#f1f5f9}
-.tcy{color:#c084fc}.tpk{color:#f472b6}
-.cursor{display:inline-block;width:6px;height:12px;background:#4ade80;vertical-align:middle;
-  animation:blink 1s step-end infinite;margin-left:2px}
+.scan-line{position:absolute;left:0;right:0;height:42px;pointer-events:none;z-index:5;
+  background:linear-gradient(180deg,transparent 0%,rgba(34,211,238,.18) 30%,rgba(168,85,247,.22) 60%,transparent 100%);
+  border-top:1px solid rgba(34,211,238,.5);border-bottom:1px solid rgba(168,85,247,.5);
+  box-shadow:0 0 30px rgba(34,211,238,.4);transition:top 1.4s cubic-bezier(.65,.05,.36,1);top:60px;
+  opacity:.85}
+.scan-line::before{content:'';position:absolute;left:0;top:50%;width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan) 20%,var(--purple) 50%,var(--pink) 80%,transparent);
+  box-shadow:0 0 12px var(--cyan);animation:scanShimmer 2s linear infinite}
+@keyframes scanShimmer{0%{opacity:.6}50%{opacity:1}100%{opacity:.6}}
 
-/* ═══ CODE EDITOR ═══ */
-.editor{background:#1e293b;border:1px solid #334155;border-radius:10px;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.ed-tabs{display:flex;background:#0f172a;border-bottom:1px solid #334155;overflow-x:auto;flex-shrink:0}
-.etab{padding:5px 12px;font-size:.62rem;font-family:var(--font-mono);color:#64748b;
-  border-right:1px solid #334155;white-space:nowrap;transition:all .3s;
-  opacity:0;transform:translateY(-3px)}
-.etab.on{opacity:1;transform:translateY(0)}
-.etab.act{color:#f1f5f9;background:#1e293b;box-shadow:inset 0 -2px 0 #c084fc}
-.ed-body{padding:.6rem 0;font-family:var(--font-mono);font-size:.66rem;line-height:1.85;overflow-y:auto;flex:1}
-.cl{display:flex;opacity:0;transform:translateX(-4px);transition:all .12s ease;padding:0 .8rem}
-.cl.on{opacity:1;transform:translateX(0)}
-.cl:hover{background:rgba(192,132,252,.05)}
-.ln{color:#475569;min-width:2.2em;text-align:right;padding-right:.8em;user-select:none;font-size:.62rem}
-.ct{flex:1;white-space:pre;color:#e2e8f0}
-.kw{color:#ff7b72}.fn{color:#d2a8ff}.cls{color:#ffa657}.str{color:#a5d6ff}
-.cm{color:#64748b;font-style:italic}.num{color:#79c0ff}.op{color:#79c0ff}.slf{color:#ff7b72}
-.dec{color:#d2a8ff}.key{color:#7ee787}
+.page-fold{position:absolute;top:0;right:0;width:18px;height:18px;
+  background:linear-gradient(225deg,#e2e8f0 50%,transparent 50%);z-index:6}
+.page-no{position:absolute;bottom:6px;right:14px;font-size:8px;color:#94a3b8;font-family:var(--font-mono);z-index:6}
 
-/* ═══ FILE TREE ═══ */
-.ftree{width:180px;flex-shrink:0;background:#f8fafc;border:1px solid var(--border);border-radius:10px;
-  padding:.6rem 0;overflow:hidden}
-.ft-hd{padding:0 .7rem .4rem;font-size:.65rem;font-weight:600;color:var(--dim);
-  border-bottom:1px solid var(--border);margin-bottom:.3rem;display:flex;align-items:center;gap:.3rem}
-.ft-item{padding:2px .7rem 2px 1.2rem;font-size:.6rem;font-family:var(--font-mono);color:var(--dim);
-  transition:all .2s;opacity:0;transform:translateX(-6px);display:flex;align-items:center;gap:.35rem;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ft-item.on{opacity:1;transform:translateX(0)}
-.ft-item.act{background:rgba(124,58,237,.07);color:var(--purple)}
-.ft-item.done{color:var(--green)}
-.ft-icon{font-size:.7rem;width:14px;text-align:center;flex-shrink:0}
+.agent-wrap{flex:1;display:flex;flex-direction:column;min-height:0;background:radial-gradient(ellipse at top,rgba(34,211,238,.06),transparent 60%)}
+.agent-brain{padding:1rem 1rem .6rem;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:.55rem;
+  border-bottom:1px solid var(--border);position:relative}
+.brain-orb{width:74px;height:74px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 35% 30%,#fff,#22d3ee 30%,#a855f7 65%,#ec4899);
+  box-shadow:0 0 40px rgba(168,85,247,.6),inset 0 0 20px rgba(255,255,255,.3);
+  animation:orbFloat 4s ease-in-out infinite}
+.brain-orb::before,.brain-orb::after{content:'';position:absolute;inset:-8px;border-radius:50%;
+  border:1px solid rgba(34,211,238,.4);animation:orbRing 3s ease-in-out infinite}
+.brain-orb::after{inset:-16px;border-color:rgba(168,85,247,.3);animation-delay:.5s}
+.brain-orb.thinking{animation:orbThink 1s ease-in-out infinite}
+@keyframes orbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes orbRing{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:.2}}
+@keyframes orbThink{0%,100%{box-shadow:0 0 40px rgba(168,85,247,.6),inset 0 0 20px rgba(255,255,255,.3)}50%{box-shadow:0 0 60px rgba(34,211,238,.9),inset 0 0 30px rgba(255,255,255,.5)}}
 
-/* ═══ PLANNER / DAG CANVAS ═══ */
-.spanel{flex:1;display:flex;flex-direction:column;min-width:0}
-.spanel canvas{flex:1;width:100%;border-radius:8px;background:var(--bg2);border:1px solid var(--border)}
-.tier-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;
-  display:flex;flex-direction:column;gap:.5rem;width:240px;flex-shrink:0}
-.tier-title{font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
-.tier-val{font-size:1.1rem;font-weight:700}
-.tier-star{color:var(--amber);font-size:1rem;letter-spacing:.1em}
-.tier-exts{font-size:.62rem;color:var(--text);line-height:1.55;display:flex;flex-direction:column;gap:.2rem}
-.tier-ext{padding:.25rem .4rem;background:var(--bg2);border-radius:4px;border-left:2px solid var(--purple);
-  opacity:0;transform:translateX(-4px);transition:all .25s}
-.tier-ext.on{opacity:1;transform:translateX(0)}
+.brain-status{font-family:var(--font-mono);font-size:.72rem;color:var(--cyan);font-weight:600;letter-spacing:.5px;
+  text-shadow:0 0 12px rgba(34,211,238,.5);min-height:1.1em;text-align:center}
+.brain-sub{font-size:.66rem;color:var(--muted);font-family:var(--font-mono);letter-spacing:.5px}
+.thinking-dots{display:inline-flex;gap:3px;margin-left:6px}
+.thinking-dots span{width:4px;height:4px;border-radius:50%;background:var(--cyan);
+  animation:dotBounce 1.2s ease-in-out infinite;box-shadow:0 0 6px currentColor}
+.thinking-dots span:nth-child(2){animation-delay:.15s}
+.thinking-dots span:nth-child(3){animation-delay:.3s}
+@keyframes dotBounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
 
-/* ═══ CRITIC (triple check) ═══ */
-.critic-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.7rem;flex:1}
-.critic-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.75rem .85rem;
-  display:flex;flex-direction:column;gap:.35rem;position:relative;overflow:hidden}
-.critic-head{display:flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:700;color:var(--text)}
-.critic-head .mdl{font-size:.52rem;color:var(--muted);font-weight:500;margin-left:auto;font-family:var(--font-mono)}
-.critic-list{display:flex;flex-direction:column;gap:.25rem;margin-top:.3rem}
-.critic-item{font-size:.58rem;padding:.3rem .45rem;background:var(--bg2);border-radius:5px;
-  display:flex;align-items:center;gap:.35rem;opacity:0;transform:translateX(-4px);transition:all .3s;
-  border-left:2px solid var(--border)}
-.critic-item.on{opacity:1;transform:translateX(0)}
-.critic-item.pass{border-left-color:var(--green);color:var(--text)}
-.critic-item.warn{border-left-color:var(--amber);color:var(--text)}
-.critic-ii{font-size:.65rem;flex-shrink:0;width:12px;text-align:center}
+.tokens-section{padding:.7rem 1rem;flex-shrink:0;border-bottom:1px solid var(--border)}
+.tokens-label{font-size:.62rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
+.tokens-label::before{content:'';width:3px;height:10px;background:linear-gradient(180deg,var(--cyan),var(--purple));border-radius:2px}
+.tokens{display:flex;flex-wrap:wrap;gap:.35rem;min-height:32px}
+.tok{font-family:var(--font-mono);font-size:.66rem;padding:.25rem .55rem;border-radius:6px;
+  background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);color:var(--cyan);font-weight:600;
+  opacity:0;transform:translateY(8px) scale(.8);animation:tokIn .5s cubic-bezier(.22,1,.36,1) forwards;
+  display:flex;align-items:center;gap:.3rem}
+.tok.t-eq{background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.35);color:#c084fc}
+.tok.t-arch{background:rgba(236,72,153,.1);border-color:rgba(236,72,153,.35);color:#f472b6}
+.tok.t-param{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.35);color:#fbbf24}
+.tok.t-loss{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.35);color:#34d399}
+.tok-icon{font-size:.7rem}
+@keyframes tokIn{to{opacity:1;transform:none}}
 
-/* ═══ TOURNAMENT / KNOWLEDGE DISCOVERY ═══ */
-.arena{display:flex;flex-direction:column;flex:1;gap:.5rem;min-width:0}
-.arena-hd{display:flex;align-items:center;gap:.7rem;padding:.15rem 0}
-.gen-badge{font-size:.58rem;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--pink),var(--purple));
-  padding:3px 8px;border-radius:12px;letter-spacing:.6px;font-family:var(--font-mono)}
-.round-badge{font-size:.55rem;color:var(--dim);font-family:var(--font-mono);letter-spacing:.5px;
-  padding:2px 7px;background:var(--bg2);border:1px solid var(--border);border-radius:10px}
-.arena-status{font-size:.62rem;color:var(--dim);margin-left:auto;font-family:var(--font-mono)}
-.arena-status .v{color:var(--pink);font-weight:600}
+.thoughts{flex:1;overflow:hidden;padding:.7rem 1rem;display:flex;flex-direction:column;gap:.45rem;min-height:0;
+  font-family:var(--font-mono);font-size:.7rem;mask-image:linear-gradient(180deg,transparent 0,black 16%,black 100%)}
+.thought{display:flex;align-items:flex-start;gap:.5rem;padding:.5rem .65rem;border-radius:8px;
+  background:rgba(20,27,51,.6);border:1px solid var(--border);color:var(--dim);
+  opacity:0;transform:translateX(-12px);animation:thoughtIn .5s cubic-bezier(.22,1,.36,1) forwards;flex-shrink:0;line-height:1.5}
+.thought .ti{flex-shrink:0;width:16px;height:16px;border-radius:5px;background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--cyan);font-weight:900;margin-top:1px}
+.thought.read .ti{background:rgba(168,85,247,.2);color:#c084fc}
+.thought.think .ti{background:rgba(34,211,238,.2);color:var(--cyan)}
+.thought.plan .ti{background:rgba(245,158,11,.2);color:#fbbf24}
+.thought.write .ti{background:rgba(16,185,129,.2);color:#34d399}
+.thought b{color:var(--text);font-weight:600}
+@keyframes thoughtIn{to{opacity:1;transform:none}}
 
-.islands{display:grid;grid-template-columns:repeat(4,1fr);gap:.45rem;flex-shrink:0}
-.isl{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:.5rem .6rem;
-  position:relative;overflow:hidden;transition:all .5s cubic-bezier(.22,1,.36,1);min-height:92px;
-  opacity:0;transform:translateY(8px) scale(.96)}
-.isl.on{opacity:1;transform:translateY(0) scale(1)}
-.isl.alive{border-color:var(--purple);box-shadow:0 0 0 2px rgba(124,58,237,.06),0 2px 6px rgba(124,58,237,.08)}
-.isl.training{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(2,132,199,.08)}
-.isl.debugging{border-color:var(--amber);box-shadow:0 0 0 2px rgba(217,119,6,.1)}
-.isl.survived{border-color:var(--green);box-shadow:0 0 0 2px rgba(5,150,105,.1)}
-.isl.eliminated{opacity:.3;filter:grayscale(.5);border-style:dashed}
-.isl.winner{border-color:var(--gold);background:linear-gradient(145deg,#fffdf3,#fff);
-  box-shadow:0 0 0 2px rgba(202,138,4,.2),0 4px 16px rgba(202,138,4,.22)}
-.isl-head{display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem}
-.isl-em{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;
-  font-size:.62rem;font-weight:700;color:#fff;font-family:var(--font-mono);flex-shrink:0}
-.isl-name{font-size:.62rem;font-weight:700;color:var(--text);flex:1;overflow:hidden;
-  white-space:nowrap;text-overflow:ellipsis}
-.isl-id{font-size:.5rem;font-family:var(--font-mono);color:var(--muted)}
-.isl-psnr{font-size:.85rem;font-weight:700;font-family:var(--font-mono);color:var(--text);
-  transition:color .3s}
-.isl.winner .isl-psnr{color:var(--gold)}
-.isl.survived .isl-psnr{color:var(--green)}
-.isl-bar-wrap{height:4px;background:var(--bg3);border-radius:2px;margin-top:.25rem;overflow:hidden}
-.isl-bar{height:100%;border-radius:2px;transition:width .3s linear;
-  background:linear-gradient(90deg,var(--cyan),var(--purple))}
-.isl.survived .isl-bar{background:linear-gradient(90deg,var(--green),#34d399)}
-.isl.winner .isl-bar{background:linear-gradient(90deg,var(--gold),#fbbf24)}
-.isl.eliminated .isl-bar{background:var(--muted)}
-.isl-status{font-size:.52rem;color:var(--dim);font-family:var(--font-mono);margin-top:.2rem;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.isl-status.err{color:var(--red)}
-.isl-status.dbg{color:var(--amber)}
-.isl-status.win{color:var(--gold);font-weight:700}
+.code-wrap{flex:1;display:flex;flex-direction:column;min-height:0;background:#0a0e1a;overflow:hidden}
+.code-tabs{display:flex;gap:1px;padding:0 1rem;flex-shrink:0;
+  background:linear-gradient(180deg,#0d1322,#0a0e1a);border-bottom:1px solid var(--border)}
+.tab{padding:.55rem .85rem;font-size:.7rem;font-family:var(--font-mono);color:var(--muted);
+  border-bottom:2px solid transparent;cursor:default;display:flex;align-items:center;gap:.4rem;transition:all .3s}
+.tab .file-i{font-size:.75rem}
+.tab.active{color:var(--cyan);border-color:var(--cyan);background:rgba(34,211,238,.05);text-shadow:0 0 8px rgba(34,211,238,.4)}
+.tab.done .file-i{color:var(--green)}
 
-.arena-btm{display:grid;grid-template-columns:1.1fr 1fr;gap:.5rem;flex:1;min-height:0}
-.psnr-race{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.5rem .7rem;
-  display:flex;flex-direction:column;min-width:0}
-.race-title{font-size:.65rem;font-weight:700;color:var(--text);display:flex;align-items:center;
-  gap:.4rem;margin-bottom:.35rem}
-.race-title .step{font-family:var(--font-mono);font-size:.58rem;color:var(--dim);margin-left:auto;font-weight:500}
-.race-canvas{flex:1;width:100%;border-radius:6px;background:var(--bg2);min-height:0}
+.code-body{flex:1;overflow:auto;display:flex;font-family:var(--font-mono);font-size:.74rem;line-height:1.65;position:relative;min-height:0}
+.gutter{flex-shrink:0;padding:.6rem .55rem .6rem .85rem;color:#3a4564;text-align:right;user-select:none;
+  border-right:1px solid var(--border);background:#080c17;font-size:.68rem;min-width:38px}
+.gutter span{display:block}
+.code-content{flex:1;padding:.6rem 1rem;color:#cbd5e1;white-space:pre;min-width:0}
+.code-line{display:block;min-height:1.65em;opacity:0;animation:codeLineIn .25s ease forwards}
+@keyframes codeLineIn{to{opacity:1}}
+.k{color:#c084fc;font-weight:600}.s{color:#34d399}.n{color:#fbbf24}.c{color:#64748b;font-style:italic}
+.fn{color:#22d3ee}.cls{color:#fde047}.dec{color:#f472b6}.op{color:#94a3b8}.self{color:#fb7185;font-style:italic}
+.cursor{display:inline-block;width:7px;height:1em;background:var(--cyan);vertical-align:text-bottom;
+  animation:caret 1s steps(1) infinite;box-shadow:0 0 8px currentColor;margin-left:1px}
+@keyframes caret{50%{opacity:0}}
 
-.ledger{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.5rem .7rem;
-  display:flex;flex-direction:column;min-width:0}
-.ledger-title{font-size:.65rem;font-weight:700;color:var(--text);margin-bottom:.35rem;
-  display:flex;align-items:center;gap:.35rem}
-.ledger-title .badge{font-size:.5rem;background:linear-gradient(135deg,var(--indigo),var(--pink));
-  color:#fff;padding:1px 6px;border-radius:8px;letter-spacing:.4px;font-family:var(--font-mono);font-weight:700}
-.ledger-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.3rem;font-size:.6rem;min-height:0}
-.ledger-entry{display:flex;gap:.4rem;opacity:0;transform:translateX(-4px);transition:all .35s;
-  padding:.25rem .4rem;border-radius:5px;border-left:2px solid var(--indigo);background:var(--bg2);
-  line-height:1.4}
-.ledger-entry.on{opacity:1;transform:translateX(0)}
-.ledger-entry.worked{border-left-color:var(--green)}
-.ledger-entry.failed{border-left-color:var(--red)}
-.ledger-entry.synthesis{border-left-color:var(--gold);background:#fffbea}
-.ledger-gen{font-family:var(--font-mono);color:var(--dim);font-size:.55rem;flex-shrink:0;width:30px;font-weight:600}
-.ledger-txt{flex:1;color:var(--text)}
-.ledger-txt .tag{display:inline-block;font-family:var(--font-mono);font-size:.52rem;padding:0 4px;
-  background:var(--bg3);border-radius:3px;color:var(--dim);margin-right:.3rem}
+.code-status{flex-shrink:0;padding:.5rem 1rem;border-top:1px solid var(--border);background:linear-gradient(180deg,transparent,rgba(20,27,51,.4));
+  display:flex;align-items:center;gap:.7rem;font-size:.66rem;font-family:var(--font-mono);color:var(--muted)}
+.code-status .lhs{display:flex;gap:.7rem;align-items:center}
+.code-status .gen-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px currentColor;animation:dotPulse 1.4s ease-in-out infinite}
+.code-status .rhs{margin-left:auto;display:flex;gap:.7rem;align-items:center}
+.code-status .v{color:var(--text);font-weight:600}
+.lang-badge{padding:.15rem .45rem;border-radius:4px;background:rgba(34,211,238,.12);color:var(--cyan);
+  border:1px solid rgba(34,211,238,.3);font-weight:700;letter-spacing:.5px}
 
-/* ═══ BRACKET ═══ */
-.bracket-wrap{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.55rem .7rem;
-  display:flex;flex-direction:column;width:230px;flex-shrink:0;gap:.3rem;min-height:0}
-.bracket-title{font-size:.62rem;font-weight:700;color:var(--text);margin-bottom:.15rem}
-.bracket-canvas{flex:1;width:100%;border-radius:6px;background:var(--bg2);min-height:0}
+.gen-progress{height:2px;background:var(--border);position:relative;overflow:hidden;flex-shrink:0}
+.gen-progress::before{content:'';position:absolute;left:0;top:0;height:100%;width:var(--p,0%);
+  background:linear-gradient(90deg,var(--cyan),var(--purple),var(--pink));
+  box-shadow:0 0 10px rgba(168,85,247,.6);transition:width .5s ease}
 
-/* ═══ DISCOVERY MOMENT ═══ */
-.discovery-modal{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(255,251,235,.98),rgba(255,255,255,.95));
-  backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .6s ease;z-index:5}
-.discovery-modal.on{opacity:1;pointer-events:auto}
-.discovery-card{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:1.6rem 2rem;
-  max-width:560px;box-shadow:0 20px 60px rgba(202,138,4,.25);position:relative;
-  transform:scale(.88) translateY(20px);opacity:0;transition:all .6s cubic-bezier(.22,1,.36,1)}
-.discovery-modal.on .discovery-card{transform:scale(1) translateY(0);opacity:1}
-.discovery-tag{font-size:.6rem;color:var(--gold);font-weight:700;letter-spacing:2px;font-family:var(--font-mono);
-  margin-bottom:.4rem}
-.discovery-name{font-size:2rem;font-weight:900;letter-spacing:-1px;
-  background:linear-gradient(135deg,var(--gold),var(--pink),var(--purple));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.3rem;line-height:1}
-.discovery-sub{font-size:.82rem;color:var(--dim);margin-bottom:.9rem;font-style:italic}
-.discovery-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin:.7rem 0 .9rem}
-.dstat{text-align:center;padding:.45rem .5rem;background:var(--bg2);border-radius:8px;border:1px solid var(--border)}
-.dstat-l{font-size:.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
-.dstat-v{font-size:1.05rem;font-weight:700;font-family:var(--font-mono);color:var(--text);margin-top:.1rem}
-.dstat-v.pos{color:var(--green)}
-.dstat-v.gold{color:var(--gold)}
-.discovery-techs{font-size:.68rem;color:var(--text);line-height:1.6}
-.discovery-techs b{color:var(--purple)}
-.dtech{display:flex;gap:.4rem;padding:.3rem .5rem;background:var(--bg2);border-radius:5px;margin-top:.3rem;
-  border-left:2px solid var(--pink);opacity:0;transform:translateX(-6px);transition:all .35s}
-.dtech.on{opacity:1;transform:translateX(0)}
-.dtech-i{font-family:var(--font-mono);font-size:.58rem;color:var(--pink);font-weight:700;flex-shrink:0;width:22px}
-.dtech-t{flex:1}
-.dtech-t code{background:#f3e8ff;padding:0 5px;border-radius:3px;font-family:var(--font-mono);font-size:.6rem;color:#6b21a8}
+.footer{flex-shrink:0;display:flex;align-items:center;padding:.45rem 1.4rem;height:32px;
+  background:linear-gradient(180deg,rgba(15,20,36,.6),rgba(10,14,26,.9));backdrop-filter:blur(8px);
+  border-top:1px solid var(--border);font-size:.66rem;font-family:var(--font-mono);color:var(--muted);gap:1.2rem}
+.footer .fstat{display:flex;align-items:center;gap:.4rem}
+.footer .v{color:var(--text);font-weight:600}
+.footer .ok{color:var(--green)}
+.footer-spacer{flex:1}
+.brand-link{color:var(--dim);text-decoration:none;transition:color .3s;display:inline-flex;align-items:center;gap:.35rem}
+.brand-link:hover{color:var(--cyan)}
 
-/* ═══ PSNR CHART ═══ */
-.chart-wrap{flex:1.2;display:flex;flex-direction:column;min-width:0}
-.chart-wrap canvas{flex:1;width:100%;border-radius:8px;background:#fff;border:1px solid var(--border)}
-.tmetrics{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:.5rem}
-.tm{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.55rem .7rem}
-.tm-l{font-size:.58rem;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
-.tm-v{font-size:1.2rem;font-weight:700;font-family:var(--font-mono);margin-top:.1rem;color:var(--text)}
-.tm-v.cv{color:var(--purple)}.tm-v.pink{color:var(--pink)}.tm-v.g{color:var(--green)}
-.tlog{background:var(--bg2);border:1px solid var(--border);border-radius:8px;flex:1;margin-top:.3rem;
-  padding:.4rem .6rem;font-family:var(--font-mono);font-size:.58rem;line-height:1.6;overflow-y:auto;color:var(--dim)}
+.replay{position:fixed;bottom:46px;right:18px;z-index:50;
+  padding:.55rem .9rem;border-radius:8px;border:1px solid var(--border2);background:rgba(15,20,36,.85);
+  backdrop-filter:blur(10px);color:var(--text);font-size:.72rem;font-family:var(--font-mono);font-weight:600;
+  cursor:pointer;display:flex;align-items:center;gap:.45rem;transition:all .3s;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);opacity:0;transform:translateY(8px);pointer-events:none}
+.replay.show{opacity:1;transform:none;pointer-events:auto}
+.replay:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:0 8px 24px rgba(34,211,238,.25)}
+.replay svg{width:13px;height:13px}
 
-/* ═══ RESULT ═══ */
-.res-vid{flex:1.5;position:relative;border-radius:12px;overflow:hidden;min-width:0;
-  border:1px solid var(--border);background:#000;box-shadow:0 4px 20px rgba(0,0,0,.12)}
-.res-vid video{width:100%;height:100%;object-fit:cover}
-.vid-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  background:rgba(248,250,252,.9);color:var(--dim);font-size:.8rem;transition:opacity .5s}
-.vid-loading.hide{opacity:0;pointer-events:none}
-.res-overlay{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);
-  color:#fff;padding:.4rem .65rem;border-radius:8px;font-family:var(--font-mono);font-size:.6rem;
-  border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;gap:.5rem}
-.res-overlay .rec{width:7px;height:7px;border-radius:50%;background:var(--pink);
-  animation:pulse-dot 1.2s ease-in-out infinite}
-.res-stats{width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:.5rem}
-.fcard{background:linear-gradient(145deg,rgba(202,138,4,.05),rgba(219,39,119,.04));
-  border:1px solid rgba(202,138,4,.22);border-radius:12px;padding:1.1rem;
-  opacity:0;transform:scale(.95) translateY(8px);transition:all .6s cubic-bezier(.22,1,.36,1)}
-.fcard.on{opacity:1;transform:scale(1) translateY(0)}
-.fcard h3{font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem}
-.psnr-big{font-size:2rem;font-weight:800;text-align:center;margin:.4rem 0;
-  background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.psnr-tgt{text-align:center;font-size:.7rem;color:var(--dim);margin-bottom:.4rem}
-.badge{display:inline-flex;align-items:center;gap:.2rem;padding:1px 6px;border-radius:3px;font-size:.6rem;font-weight:600}
-.badge-ok{background:rgba(5,150,105,.1);color:var(--green)}
-.badge-disc{background:rgba(202,138,4,.14);color:var(--gold)}
-.fstat{display:flex;justify-content:space-between;padding:.22rem 0;font-size:.72rem;border-bottom:1px solid var(--border)}
-.fstat:last-child{border:none}.fstat .fl{color:var(--dim)}.fstat .fv{font-family:var(--font-mono);font-weight:600}
-.fstat .fv.g{color:var(--green)}.fstat .fv.pink{color:var(--pink)}.fstat .fv.gold{color:var(--gold)}
-.ffiles{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.65rem;
-  opacity:0;transition:opacity .5s .2s ease}
-.ffiles.on{opacity:1}
-.ffiles h4{font-size:.65rem;color:var(--dim);margin-bottom:.35rem;display:flex;align-items:center;gap:.35rem}
-.ff{font-family:var(--font-mono);font-size:.58rem;padding:1px 0;display:flex;align-items:center;gap:.3rem;color:var(--text)}
-.ff-c{color:var(--green);font-size:.6rem}
-.ff-d{color:var(--gold);font-size:.6rem}
+.final-card{position:absolute;left:12px;right:12px;bottom:46px;padding:.7rem .9rem;border-radius:10px;
+  background:linear-gradient(135deg,rgba(16,185,129,.14),rgba(34,211,238,.1));
+  border:1px solid rgba(16,185,129,.4);display:flex;align-items:center;gap:.7rem;
+  box-shadow:0 8px 28px rgba(16,185,129,.2);
+  opacity:0;transform:translateY(12px);transition:all .6s cubic-bezier(.22,1,.36,1);pointer-events:none;z-index:10}
+.final-card.show{opacity:1;transform:none}
+.final-card .fc-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--green),var(--cyan));
+  display:flex;align-items:center;justify-content:center;color:#001;font-weight:900;font-size:1rem;
+  box-shadow:0 0 14px rgba(16,185,129,.5);flex-shrink:0}
+.final-card .fc-text{flex:1;min-width:0}
+.final-card .fc-title{font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:1px}
+.final-card .fc-sub{font-size:.66rem;color:var(--dim);font-family:var(--font-mono)}
+.final-card .fc-stats{display:flex;gap:.7rem;font-size:.66rem;font-family:var(--font-mono);color:var(--green);font-weight:700}
 
-/* ═══ PROGRESS ═══ */
-#prog{height:34px;display:flex;align-items:center;padding:0 1.5rem;gap:.8rem;flex-shrink:0;
-  border-top:1px solid var(--border);background:var(--bg2)}
-#prog-stage{font-size:.65rem;color:var(--dim);min-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#prog-bar{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
-#prog-fill{height:100%;width:0;border-radius:2px;transition:width .3s linear;
-  background:linear-gradient(90deg,var(--purple),var(--pink),var(--cyan))}
-#prog-lbl{font-size:.68rem;font-family:var(--font-mono);color:var(--dim);min-width:80px;text-align:right}
-
-/* ═══ REPLAY ═══ */
-#replay{position:fixed;inset:0;background:rgba(255,255,255,.93);display:none;
-  align-items:center;justify-content:center;z-index:50;flex-direction:column;gap:1.2rem;backdrop-filter:blur(8px)}
-#replay.on{display:flex}
-#replay h2{font-size:1.7rem;font-weight:800;
-  background:linear-gradient(135deg,var(--purple),var(--pink),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-#replay p{color:var(--dim);font-size:.85rem;text-align:center;max-width:420px;line-height:1.5}
-#replay-btn{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border:none;
-  padding:.6rem 1.8rem;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;
-  transition:transform .2s,box-shadow .2s;letter-spacing:.3px}
-#replay-btn:hover{transform:scale(1.05);box-shadow:0 4px 20px rgba(124,58,237,.3)}
-
-/* ═══ ANIMATIONS ═══ */
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes introTitle{to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes splatPop{0%{opacity:0;transform:scale(.2)}50%{opacity:.12;transform:scale(1.1)}100%{opacity:.05;transform:scale(1)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes shake{0%,100%{transform:translate(-50%,-50%)}25%{transform:translate(calc(-50% + 3px),-50%)}
-  75%{transform:translate(calc(-50% - 3px),-50%)}}
-@keyframes edgeFlow{to{stroke-dashoffset:-12}}
-@keyframes barPulse{0%,100%{opacity:.2}50%{opacity:.9}}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-@keyframes burst{from{opacity:.6;transform:scale(.9)}to{opacity:0;transform:scale(1.35)}}
-@keyframes championPulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.7;transform:scale(1.04)}}
-@keyframes gridDrift{from{background-position:0 0}to{background-position:48px 48px}}
-@keyframes pulse-dot{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+@media (max-width:1100px){
+  main{grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,1.1fr)}
+  .paper{font-size:8.5px}
+}
+@media (max-width:880px){
+  main{grid-template-columns:1fr}
+  .pane{min-height:320px}
+}
 </style>
 </head>
 <body>
 
+<div class="particles" id="particles"></div>
+
 <div id="intro">
-  <div class="intro-splats" id="intro-splats"></div>
-  <h1>SPLATIFY</h1>
-  <p>Paper2Code &middot; Multi-Agent Knowledge Discovery</p>
-  <div class="sub2">GAUSSIAN SPLATTING &middot; 8 SPECIALIZED AGENTS &middot; EVOLUTIONARY SEARCH</div>
+  <div class="glow"></div>
+  <div class="tag">N E R F I F Y</div>
+  <h1>Paper → Code</h1>
+  <p>Watch a Claude agent read a NeRF paper end-to-end, extract the architecture, and write a complete NeRFStudio implementation — live.</p>
   <div class="intro-bar"><span></span><span></span><span></span><span></span><span></span></div>
 </div>
 
 <div id="app">
   <header>
-    <div class="logo">SPLATIFY</div>
-    <span class="logo-tag">PAPER2CODE + DISCOVER</span>
-    <div class="header-sep"></div>
-    <div class="hm">
-      <span>Tokens <span class="v" id="m-tok">0</span></span>
-      <span>Cost <span class="v" id="m-cost">$0.00</span></span>
-      <span>Agents <span class="v" id="m-turns">0</span></span>
-      <span>Generations <span class="v" id="m-gens">0</span></span>
+    <div class="logo"><div class="logo-mark"></div><span class="logo-text">Nerfify</span></div>
+    <div class="h-divider"></div>
+    <div class="crumbs">
+      <span>arxiv:2003.08934</span><span class="arrow">›</span>
+      <span>NeRF</span><span class="arrow">›</span>
+      <span class="current" id="crumb">parser</span>
     </div>
-    <div class="header-spacer"></div>
-    <div class="timer" id="timer">0:00</div>
+    <div class="spacer"></div>
+    <div class="h-stats">
+      <div class="stat"><div class="dot"></div><span>orchestrator</span></div>
+      <div class="stat">tokens <span class="v" id="tokCount">0</span></div>
+      <div class="stat">model <span class="v">claude-opus-4.7</span></div>
+    </div>
+    <div class="h-divider"></div>
+    <div class="timer" id="timer">00:00.0</div>
   </header>
-  <div id="orch">
-    <span class="o-icon">🧠</span>
-    <span class="o-tag">ORCHESTRATOR</span>
-    <span id="orch-msg">Initializing pipeline...</span>
+
+  <div class="pipeline" id="pipeline">
+    <div class="pstep" data-step="parse"><div class="pi"></div><span>parse</span></div>
+    <div class="parrow">›</div>
+    <div class="pstep" data-step="read"><div class="pi"></div><span>read</span></div>
+    <div class="parrow">›</div>
+    <div class="pstep" data-step="extract"><div class="pi"></div><span>extract</span></div>
+    <div class="parrow">›</div>
+    <div class="pstep" data-step="plan"><div class="pi"></div><span>plan</span></div>
+    <div class="parrow">›</div>
+    <div class="pstep" data-step="code"><div class="pi"></div><span>code</span></div>
+    <div class="parrow">›</div>
+    <div class="pstep" data-step="test"><div class="pi"></div><span>test</span></div>
   </div>
-  <div id="pipeline"><svg id="esvg" viewBox="0 0 1000 172" preserveAspectRatio="none"></svg></div>
-  <div id="stage"></div>
-  <div id="prog">
-    <span id="prog-stage">Waiting...</span>
-    <div id="prog-bar"><div id="prog-fill"></div></div>
-    <span id="prog-lbl">0:00 / 1:45</span>
+
+  <div class="gen-progress" id="genProgress" style="--p:0%"></div>
+
+  <main>
+    <section class="pane">
+      <div class="pane-head">
+        <div class="pane-icon ic-paper">P</div>
+        <div><div class="pane-title">nerf_paper.pdf</div></div>
+        <div class="pane-sub">PDF · 14 pages</div>
+      </div>
+      <div class="paper-wrap">
+        <div class="scan-line" id="scanLine"></div>
+        <div class="paper">
+          <div class="page-fold"></div>
+          <div class="page-no" id="pageNo">1 / 14</div>
+          <div class="paper-scroll" id="paperScroll">
+            <h2 id="p-title">NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis</h2>
+            <div class="authors">Ben Mildenhall · Pratul P. Srinivasan · Matthew Tancik · Jonathan T. Barron · Ravi Ramamoorthi · Ren Ng</div>
+            <div class="abstract" id="p-abstract">
+              <b>Abstract.</b> We present a method that achieves state-of-the-art results for synthesizing novel views of complex scenes by optimizing an underlying continuous volumetric scene function using a sparse set of input views. Our algorithm represents a scene using a fully-connected (non-convolutional) deep network, whose input is a single continuous 5D coordinate (spatial location <code>(x,y,z)</code> and viewing direction <code>(θ,φ)</code>) and whose output is the volume density and view-dependent emitted radiance at that spatial location.
+            </div>
+            <div class="sec" id="p-sec1"><span class="num">1</span>Introduction</div>
+            <p>We address the long-standing problem of view synthesis by directly optimizing parameters of a continuous 5D scene representation to minimize the error of rendering a set of captured images. The representation is a multilayer perceptron (MLP) that maps each 5D input coordinate to a single volume density and view-dependent RGB color.</p>
+            <p>To render this neural radiance field from a particular viewpoint we use volume rendering techniques that are naturally differentiable, which lets us optimize through gradient descent on the residual between observed images and corresponding views rendered from our representation.</p>
+            <div class="sec" id="p-sec3"><span class="num">3</span>Neural Radiance Field Scene Representation</div>
+            <p>We represent a continuous scene as a 5D vector-valued function whose input is a 3D location <code>x = (x,y,z)</code> and 2D viewing direction <code>(θ,φ)</code>, and whose output is an emitted color <code>c = (r,g,b)</code> and volume density <code>σ</code>. In practice we approximate this continuous 5D scene representation with an MLP network <span id="p-mlp">F<sub>Θ</sub>: (x, d) → (c, σ)</span> and optimize its weights Θ.</p>
+            <div class="sec" id="p-sec4"><span class="num">4</span>Volume Rendering with Radiance Fields</div>
+            <p>The expected color <code>C(r)</code> of a camera ray <code>r(t) = o + td</code> with near and far bounds <code>t<sub>n</sub></code> and <code>t<sub>f</sub></code> is:</p>
+            <div class="equation" id="p-eq1">C(r) = ∫<sub>tn</sub><sup>tf</sup> T(t) σ(r(t)) c(r(t), d) dt <span class="lbl">(1)</span></div>
+            <p>where the function <code>T(t)</code> denotes the accumulated transmittance along the ray:</p>
+            <div class="equation" id="p-eq2">T(t) = exp(−∫<sub>tn</sub><sup>t</sup> σ(r(s)) ds) <span class="lbl">(2)</span></div>
+            <div class="sec" id="p-sec5"><span class="num">5</span>Optimizing a Neural Radiance Field</div>
+            <p>We introduce two improvements: (1) a positional encoding of the input coordinates that assists the MLP in representing higher frequency functions, and (2) a hierarchical sampling procedure.</p>
+            <div class="sec" id="p-sec51"><span class="num">5.1</span>Positional Encoding</div>
+            <p>We reformulate <code>F<sub>Θ</sub> = F'<sub>Θ</sub> ∘ γ</code>:</p>
+            <div class="equation" id="p-eq3">γ(p) = (sin(2⁰πp), cos(2⁰πp), …, sin(2^(L−1)πp), cos(2^(L−1)πp)) <span class="lbl">(4)</span></div>
+            <p>This function <code>γ(·)</code> is applied separately to each of the three coordinate values in <code>x</code> (with <b>L = 10</b>) and to the three components of the Cartesian viewing direction unit vector <b>d</b> (with <b>L = 4</b>).</p>
+            <div class="figure">network architecture</div>
+            <br><br>
+            <div class="sec" id="p-sec52"><span class="num">5.2</span>Hierarchical Volume Sampling</div>
+            <p>We simultaneously optimize two networks: one "coarse" and one "fine". We sample <code>N<sub>c</sub> = 64</code> locations using stratified sampling, and <code>N<sub>f</sub> = 128</code> additional locations from the coarse PDF.</p>
+            <div class="sec" id="p-sec53"><span class="num">5.3</span>Implementation Details</div>
+            <p>Our loss is the total squared error between rendered and true pixel colors for both the coarse and fine renderings:</p>
+            <div class="equation" id="p-eq4">L = Σ<sub>r∈R</sub> ‖Ĉ<sub>c</sub>(r) − C(r)‖² + ‖Ĉ<sub>f</sub>(r) − C(r)‖² <span class="lbl">(6)</span></div>
+            <p>We use a batch size of 4096 rays. We use the <b>Adam</b> optimizer with a learning rate that begins at <code>5×10⁻⁴</code> and decays exponentially to <code>5×10⁻⁵</code>.</p>
+            <div class="sec"><span class="num">6</span>Results</div>
+            <p>Average PSNR on the synthetic dataset reaches <b>31.01 dB</b>, exceeding the next best method by 1.5 dB.</p>
+            <div class="figure">PSNR comparison</div>
+            <br><br>
+            <div class="sec"><span class="num">7</span>Conclusion</div>
+            <p>We have proposed an effective new way to represent scenes as neural radiance fields, producing better renderings than discretized voxel approaches.</p>
+            <div class="sec">References</div>
+            <div class="ref">[1] Lombardi, S. et al. Neural Volumes. SIGGRAPH 2019.</div>
+            <div class="ref">[2] Sitzmann, V. et al. Scene Representation Networks. NeurIPS 2019.</div>
+            <div class="ref">[3] Tancik, M. et al. Fourier Features. NeurIPS 2020.</div>
+            <div class="ref">[4] Kingma, D. and Ba, J. Adam. ICLR 2015.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane">
+      <div class="pane-head">
+        <div class="pane-icon ic-agent">A</div>
+        <div><div class="pane-title">Agent · reasoning</div></div>
+        <div class="pane-sub"><span class="live-pill"><span class="ld"></span>LIVE</span></div>
+      </div>
+      <div class="agent-wrap">
+        <div class="agent-brain">
+          <div class="brain-orb thinking" id="orb"></div>
+          <div class="brain-status" id="brainStatus">Booting orchestrator<span class="thinking-dots"><span></span><span></span><span></span></span></div>
+          <div class="brain-sub" id="brainSub">claude-opus-4.7 · temperature 0.2</div>
+        </div>
+        <div class="tokens-section">
+          <div class="tokens-label">extracted concepts</div>
+          <div class="tokens" id="tokens"></div>
+        </div>
+        <div class="thoughts" id="thoughts"></div>
+      </div>
+    </section>
+
+    <section class="pane">
+      <div class="pane-head">
+        <div class="pane-icon ic-code">&lt;/&gt;</div>
+        <div><div class="pane-title">Generated implementation</div></div>
+        <div class="pane-sub" id="codeFileName">template_field.py</div>
+      </div>
+      <div class="code-tabs" id="codeTabs">
+        <div class="tab active" data-file="field"><span class="file-i">📄</span>template_field.py</div>
+        <div class="tab" data-file="model"><span class="file-i">📄</span>template_model.py</div>
+        <div class="tab" data-file="config"><span class="file-i">📄</span>template_config.py</div>
+      </div>
+      <div class="code-wrap">
+        <div class="code-body">
+          <div class="gutter" id="gutter"></div>
+          <div class="code-content" id="code"></div>
+        </div>
+        <div class="code-status">
+          <div class="lhs">
+            <div class="gen-dot"></div>
+            <span>generating <span class="v" id="curFile">template_field.py</span></span>
+          </div>
+          <div class="rhs">
+            <span>lines <span class="v" id="lineCount">0</span></span>
+            <span>•</span>
+            <span class="lang-badge">PYTHON</span>
+            <span>•</span>
+            <span>UTF-8</span>
+          </div>
+        </div>
+        <div class="final-card" id="finalCard">
+          <div class="fc-icon">✓</div>
+          <div class="fc-text">
+            <div class="fc-title">Implementation complete · ready for ns-train</div>
+            <div class="fc-sub">8 files generated · pyproject.toml + README.md</div>
+          </div>
+          <div class="fc-stats"><span>PSNR target 31.01</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer">
+    <div class="fstat"><span>status</span><span class="v ok">● running</span></div>
+    <div class="fstat"><span>cwd</span><span class="v">~/nerfify/generated/nerf_method</span></div>
+    <div class="fstat"><span>env</span><span class="v">nerfstudio</span></div>
+    <div class="footer-spacer"></div>
+    <div class="fstat"><span id="footMsg">orchestrator → parser</span></div>
+    <div class="fstat"><a class="brand-link" href="./index.html">← back to project</a></div>
   </div>
 </div>
 
-<div id="replay">
-  <h2>Discovery Complete</h2>
-  <p>Paper parsed &middot; 9 files generated &middot; 3 generations evolved &middot; 24 islands trained<br/>
-     <b>NebulaGS</b> discovered &middot; PSNR 31.72 dB (+3.42 over baseline)</p>
-  <button id="replay-btn">&#9654; Replay Demo</button>
-</div>
+<button class="replay" id="replay">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+  replay
+</button>
 
 <script>
-/* ═════════════════════════════════════════════════════════════════════
-   SPLATIFY DEMO v1 — ~105s CINEMATIC: PAPER2CODE + KNOWLEDGE DISCOVERY
-   ═════════════════════════════════════════════════════════════════════ */
-const DUR=110;
-const $=s=>document.querySelector(s);
-const $$=s=>document.querySelectorAll(s);
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const lerp=(a,b,t)=>a+(b-a)*t;
-const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-const fmt=n=>n.toLocaleString();
+const pc = document.getElementById('particles');
+for(let i=0;i<24;i++){
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = (Math.random()*100)+'%';
+  p.style.animationDelay = (Math.random()*-20)+'s';
+  pc.appendChild(p);
+}
 
-/* ── NODES & EDGES ── */
-const ND=[
-  {id:'parser',   x:55,  y:90, icon:'📄',label:'Parser',    desc:'PDF → Markdown'},
-  {id:'planner',  x:152, y:90, icon:'📋',label:'Planner',   desc:'Arch DAG + Tier'},
-  {id:'coder',    x:252, y:90, icon:'⌨️',label:'Coder',     desc:'gs_template'},
-  {id:'critic',   x:352, y:90, icon:'✅',label:'Critic',    desc:'Review×Valid×Int'},
-  {id:'tester',   x:450, y:90, icon:'🧪',label:'Tester',    desc:'gsplat smoke'},
-  {id:'debugger', x:450, y:22, icon:'🐛',label:'Debugger',  desc:'Fix Errors'},
-  {id:'arena',    x:560, y:90, icon:'🏟️',label:'Arena',     desc:'8 Islands'},
-  {id:'evolve',   x:680, y:22, icon:'🧬',label:'Evolve',    desc:'Knowledge →'},
-  {id:'champion', x:800, y:90, icon:'🏆',label:'Champion',  desc:'Winner'},
-  {id:'result',   x:935, y:90, icon:'🎯',label:'Result',    desc:'Novel Method'},
-];
-const ED=[
-  ['parser','planner'],['planner','coder'],['coder','critic'],['critic','tester'],
-  ['tester','debugger','loop'],['debugger','tester','loop'],
-  ['tester','arena'],
-  ['arena','evolve','loop'],['evolve','arena','loop'],
-  ['arena','champion'],['champion','result'],
-];
+const intro = document.getElementById('intro');
+const app = document.getElementById('app');
+setTimeout(()=>{
+  intro.classList.add('hide');
+  app.classList.add('show');
+  setTimeout(start, 600);
+}, 2400);
 
-let startT=null,elapsed=0,fired=new Set(),nEls={},eEls={};
-let raceAnimRunning=false;
+let t0 = 0, timerRAF = null;
+const $ = id => document.getElementById(id);
 
-/* ── BUILD GRAPH ── */
-function buildGraph(){
-  const svg=$('#esvg'),pipe=$('#pipeline');
-  const HW=42;
-  ED.forEach(([f,t,type])=>{
-    const a=ND.find(n=>n.id===f),b=ND.find(n=>n.id===t);
-    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
-    let d;
-    if(type==='loop'){
-      if(f==='tester'&&t==='debugger') d=`M${a.x},${a.y-22} Q${a.x+10},${b.y},${b.x+HW/2},${b.y}`;
-      else if(f==='debugger'&&t==='tester') d=`M${a.x-HW/2},${a.y} Q${a.x-HW/2-10},${b.y},${b.x},${b.y-22}`;
-      else if(f==='arena'&&t==='evolve') d=`M${a.x},${a.y-22} Q${a.x+30},${b.y-10},${b.x-HW/2},${b.y}`;
-      else if(f==='evolve'&&t==='arena') d=`M${a.x-HW/2},${a.y+10} Q${a.x-HW/2-20},${b.y},${b.x},${b.y-22}`;
-      else d=`M${a.x+HW},${a.y} C${(a.x+b.x)/2},${a.y},${(a.x+b.x)/2},${b.y},${b.x-HW},${b.y}`;
-    } else {
-      d=`M${a.x+HW},${a.y} C${a.x+HW+35},${a.y},${b.x-HW-35},${b.y},${b.x-HW},${b.y}`;
+function startTimer(){
+  t0 = performance.now();
+  function tick(){
+    const ms = performance.now()-t0;
+    const s = ms/1000;
+    const m = Math.floor(s/60);
+    const sec = (s%60).toFixed(1).padStart(4,'0');
+    $('timer').textContent = `${String(m).padStart(2,'0')}:${sec}`;
+    timerRAF = requestAnimationFrame(tick);
+  }
+  tick();
+}
+function stopTimer(){ if(timerRAF) cancelAnimationFrame(timerRAF); }
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+function setStep(name, status){
+  document.querySelectorAll('.pstep').forEach(el=>{
+    if(el.dataset.step===name){
+      el.classList.remove('done');
+      if(status==='active') el.classList.add('active');
+      if(status==='done'){ el.classList.remove('active'); el.classList.add('done'); }
     }
-    p.setAttribute('d',d);
-    p.classList.add('edge');
-    if(type==='loop') p.classList.add('loop');
-    if(f==='arena'||t==='arena'||f==='evolve'||t==='evolve'||f==='champion'||t==='champion') p.classList.add('discovery');
-    p.id=`e-${f}-${t}`;
-    svg.appendChild(p);
-    eEls[`${f}-${t}`]=p;
   });
-  /* Phase labels */
-  const phases=[
-    ['PAPER → CODE',200,10,'#7c3aed'],
-    ['KNOWLEDGE DISCOVERY',680,10,'#db2777'],
-  ];
-  phases.forEach(([txt,x,y,col])=>{
-    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
-    t.textContent=txt;t.setAttribute('x',x);t.setAttribute('y',y);
-    t.setAttribute('fill',col);t.classList.add('phase-label');t.setAttribute('text-anchor','middle');
-    svg.appendChild(t);
+  document.querySelectorAll('.parrow').forEach((a,i)=>{
+    const steps=['parse','read','extract','plan','code','test'];
+    const idx = steps.indexOf(name);
+    a.classList.toggle('active', i===idx-1 && status==='active');
   });
-  /* Loop labels */
-  [['↻ debug',428,15,'dlbl'],['↻ next gen',650,15,'glbl']].forEach(([txt,x,y,id])=>{
-    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
-    t.textContent=txt;t.setAttribute('x',x);t.setAttribute('y',y);
-    t.classList.add('svg-label');t.id=id;svg.appendChild(t);
+  $('crumb').textContent = name;
+  $('footMsg').textContent = `orchestrator → ${name}`;
+}
+
+function setBrain(text, sub){
+  $('brainStatus').innerHTML = `${text}<span class="thinking-dots"><span></span><span></span><span></span></span>`;
+  if(sub) $('brainSub').textContent = sub;
+}
+
+let tokCount = 0;
+function bumpTokens(n){
+  tokCount += n;
+  $('tokCount').textContent = tokCount.toLocaleString();
+}
+
+function addToken(text, kind, icon){
+  const t = document.createElement('div');
+  t.className = 'tok' + (kind?' t-'+kind:'');
+  t.innerHTML = (icon?`<span class="tok-icon">${icon}</span>`:'') + text;
+  $('tokens').appendChild(t);
+  bumpTokens(40 + Math.floor(Math.random()*30));
+}
+
+function addThought(kind, html){
+  const div = document.createElement('div');
+  div.className = 'thought ' + kind;
+  const labels = {read:'R', think:'T', plan:'P', write:'W'};
+  div.innerHTML = `<div class="ti">${labels[kind]||'•'}</div><div>${html}</div>`;
+  $('thoughts').appendChild(div);
+  const all = $('thoughts').children;
+  while(all.length>10) all[0].remove();
+  bumpTokens(60 + Math.floor(Math.random()*40));
+}
+
+function unfocusAll(){ document.querySelectorAll('.focus').forEach(e=>e.classList.remove('focus')); }
+function focusEl(id){
+  unfocusAll();
+  const el = document.getElementById(id);
+  if(el) el.classList.add('focus');
+}
+function scrollPaperTo(offset){ $('paperScroll').style.transform = `translateY(${-offset}px)`; }
+function setPage(n,total){ $('pageNo').textContent = `${n} / ${total||14}`; }
+function setProgress(pct){ $('genProgress').style.setProperty('--p', pct+'%'); }
+
+const codeEl = $('code');
+const gutterEl = $('gutter');
+let lineCount = 0;
+
+function clearCode(){
+  codeEl.innerHTML='';
+  gutterEl.innerHTML='';
+  lineCount=0;
+  $('lineCount').textContent='0';
+}
+
+function colorize(line){
+  return line
+    .replace(/(#[^\n]*)/g, '<span class="c">$1</span>')
+    .replace(/("[^"]*"|'[^']*')/g, '<span class="s">$1</span>')
+    .replace(/\b(import|from|class|def|return|self|if|else|elif|for|in|with|as|None|True|False|and|or|not|lambda|yield|pass|raise|try|except|finally|assert|global|nonlocal)\b/g,
+      m => m==='self' ? `<span class="self">${m}</span>` : `<span class="k">${m}</span>`)
+    .replace(/(@[\w.]+)/g, '<span class="dec">$1</span>')
+    .replace(/\b(\d+\.?\d*(?:e-?\d+)?)\b/g, '<span class="n">$1</span>');
+}
+
+async function typeLine(line, opts={}){
+  const wrap = document.createElement('span');
+  wrap.className = 'code-line';
+  codeEl.appendChild(wrap);
+  lineCount++;
+  const g = document.createElement('span');
+  g.textContent = lineCount;
+  gutterEl.appendChild(g);
+  $('lineCount').textContent = lineCount;
+  const speed = opts.speed || 8;
+  const total = line.length;
+  const step = Math.max(1, Math.floor(total/12));
+  for(let i=0;i<total;i+=step){
+    wrap.innerHTML = colorize(line.slice(0,i)) + '<span class="cursor"></span>';
+    await sleep(speed);
+  }
+  wrap.innerHTML = colorize(line) + '\n';
+  const body = codeEl.parentElement;
+  body.scrollTop = body.scrollHeight;
+  bumpTokens(line.length>0 ? Math.ceil(line.length/3.5) : 1);
+}
+
+async function typeBlock(lines, opts={}){
+  for(const l of lines) await typeLine(l, opts);
+}
+
+function switchTab(file){
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.classList.toggle('active', t.dataset.file===file);
   });
-  /* Nodes */
-  ND.forEach(n=>{
-    const el=document.createElement('div');
-    el.className='nd';el.id=`n-${n.id}`;
-    if(n.id==='arena'||n.id==='evolve'||n.id==='champion') el.classList.add('discovery');
-    el.style.left=(n.x/10)+'%';el.style.top=(n.y/1.72)+'%';
-    el.innerHTML=`<div class="nc"><div class="spinner"></div><div class="ic">${n.icon}</div><div class="lb">${n.label}</div><div class="ds">${n.desc}</div></div><div class="st"></div>`;
-    pipe.appendChild(el);nEls[n.id]=el;
-  });
-}
-function showNodes(){Object.values(nEls).forEach((el,i)=>setTimeout(()=>el.classList.add('vis'),i*50))}
-function actNode(id,s){
-  const el=nEls[id];el.classList.remove('done','err','vis');el.classList.add('active');
-  el.querySelector('.st').textContent=s||'running...';
-  ED.filter(e=>e[1]===id&&e[2]!=='loop').forEach(([f,t])=>{if(eEls[`${f}-${t}`])eEls[`${f}-${t}`].classList.add('active')});
-}
-function doneNode(id){
-  const el=nEls[id];el.classList.remove('active','err');el.classList.add('done');
-  el.querySelector('.st').textContent='✓ done';
-  ED.filter(e=>e[1]===id).forEach(([f,t])=>{const e=eEls[`${f}-${t}`];if(e){e.classList.remove('active');e.classList.add('done')}});
-}
-function champNode(id,m){const el=nEls[id];el.classList.remove('active','done','err');el.classList.add('champ');
-  el.querySelector('.st').textContent=m||'★ champion'}
-function errNode(id,m){nEls[id].classList.add('err');nEls[id].querySelector('.st').textContent=m||'✗ error'}
-function orch(msg,flag){$('#orch-msg').textContent=msg;const o=$('#orch');
-  o.classList.remove('glow','discovery');
-  if(flag==='glow'){o.classList.add('glow');setTimeout(()=>o.classList.remove('glow'),1000)}
-  else if(flag==='discovery'){o.classList.add('discovery')}
-}
-function showSt(id){$$('.sp').forEach(p=>p.classList.remove('on'));const e=document.getElementById(id);if(e)e.classList.add('on')}
-
-/* ── INTRO SPLATS ── */
-function buildIntroSplats(){
-  const host=$('#intro-splats');
-  const cols=['#7c3aed','#db2777','#0284c7','#4f46e5','#059669','#ca8a04'];
-  for(let i=0;i<18;i++){
-    const s=document.createElement('div');s.className='splat';
-    const sz=80+Math.random()*160;
-    s.style.width=sz+'px';s.style.height=sz+'px';
-    s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';
-    s.style.background=cols[Math.floor(Math.random()*cols.length)];
-    s.style.animationDelay=(Math.random()*1.2)+'s';
-    host.appendChild(s);
-  }
+  const m = {field:'template_field.py', model:'template_model.py', config:'template_config.py'};
+  $('codeFileName').textContent = m[file];
+  $('curFile').textContent = m[file];
 }
 
-/* ═══ BUILD STAGES ═══ */
-function buildStages(){
-const S=$('#stage');
-S.innerHTML=`
-<!-- PAPER -->
-<div class="sp" id="s-paper" style="align-items:center;justify-content:center">
-  <div class="paper" id="paper-card">
-    <div class="tag">arXiv:2404.13247</div>
-    <h2>Gaussian Splatting for Volumetric Diffuse Emission Scenes</h2>
-    <div class="au">K. Gupta, S. Jain, A. Nair, M. Lin &mdash; CVPR 2024</div>
-    <div class="ab">We extend 3D Gaussian Splatting to volumetric emissive media (dust clouds, nebulae, smoke)
-      where standard SplatfactoModel fails due to hard alpha compositing and Lambertian SH assumptions.
-      We introduce per-Gaussian emission parameters, a spectral consistency prior, and modified densification
-      that place Gaussians according to local radiance gradient rather than opacity alone.</div>
-    <div class="eqs" id="eqs"></div>
-  </div>
-</div>
-
-<!-- PARSE -->
-<div class="sp" id="s-parse">
-  <div class="term" style="flex:1">
-    <div class="term-h"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div><span class="term-t">parser — claude haiku</span></div>
-    <div class="term-b" id="t-parse"></div>
-  </div>
-  <div style="width:280px;flex-shrink:0;padding-top:.3rem">
-    <div class="stitle">📄 Parser Agent <span class="mdl">Claude Haiku</span></div>
-    <div style="font-size:.68rem;color:var(--muted);line-height:1.6;margin-top:.3rem">
-      Downloading arXiv PDF, extracting with MinerU, cleaning for GS implementation, recovering references to 3DGS / nerfstudio / gsplat.
-    </div>
-    <div id="parse-items" style="margin-top:.6rem;display:flex;flex-direction:column;gap:.3rem"></div>
-  </div>
-</div>
-
-<!-- PLAN -->
-<div class="sp" id="s-plan">
-  <div class="spanel"><div class="stitle">📋 Architecture DAG <span class="mdl">Claude Sonnet</span></div><canvas id="c-dag"></canvas></div>
-  <div class="tier-card">
-    <div class="tier-title">Complexity Tier</div>
-    <div class="tier-val" id="tv-star"><span class="tier-star">★★★☆☆</span></div>
-    <div style="font-size:.6rem;color:var(--dim);line-height:1.4">Tier 3: loss + rendering + new params. Extends SplatfactoModel with 5 of 9 extension points.</div>
-    <div class="tier-title" style="margin-top:.4rem">Extension Points Needed</div>
-    <div class="tier-exts" id="tv-exts"></div>
-  </div>
-</div>
-
-<!-- CODE -->
-<div class="sp" id="s-code">
-  <div class="ftree" id="ftree">
-    <div class="ft-hd">📁 nebulagen/</div>
-  </div>
-  <div class="editor" style="flex:1">
-    <div class="ed-tabs" id="ed-tabs"></div>
-    <div class="ed-body" id="ed-body"></div>
-  </div>
-</div>
-
-<!-- CRITIC triple check -->
-<div class="sp" id="s-critic">
-  <div style="flex:1;display:flex;flex-direction:column;gap:.4rem;min-width:0">
-    <div class="stitle">✅ Inline Quality Check <span class="mdl">3 parallel agents</span></div>
-    <div class="critic-grid">
-      <div class="critic-card">
-        <div class="critic-head">🔍 Reviewer <span class="mdl">Sonnet</span></div>
-        <div style="font-size:.58rem;color:var(--dim)">Import resolution · API compliance</div>
-        <div class="critic-list" id="cr-rev"></div>
-      </div>
-      <div class="critic-card">
-        <div class="critic-head">🧪 Validator <span class="mdl">Sonnet</span></div>
-        <div style="font-size:.58rem;color:var(--dim)">Paper novelties · Equations</div>
-        <div class="critic-list" id="cr-val"></div>
-      </div>
-      <div class="critic-card">
-        <div class="critic-head">🔗 Integrator <span class="mdl">Haiku</span></div>
-        <div style="font-size:.58rem;color:var(--dim)">Cross-file · MethodSpec wiring</div>
-        <div class="critic-list" id="cr-int"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- TEST -->
-<div class="sp" id="s-test">
-  <div class="term" style="flex:1">
-    <div class="term-h"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div><span class="term-t">tester — nerfstudio + gsplat</span></div>
-    <div class="term-b" id="t-test"></div>
-  </div>
-  <div class="term" style="width:340px;flex-shrink:0">
-    <div class="term-h"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div><span class="term-t">debugger — fix rasterizer</span></div>
-    <div class="term-b" id="t-debug"></div>
-  </div>
-</div>
-
-<!-- ARENA — THE MAIN EVENT -->
-<div class="sp" id="s-arena" style="flex-direction:column;gap:.5rem">
-  <div class="arena-hd">
-    <span class="gen-badge" id="gen-badge">GEN 1</span>
-    <span class="round-badge" id="round-badge">R1 · 2k iters</span>
-    <div class="stitle" style="margin:0;font-size:.72rem">🏟️ Knowledge Discovery Arena <span class="mdl">8 island agents · parallel tournament</span></div>
-    <div class="arena-status" id="arena-status">Baseline: <span class="v" id="as-baseline">28.30 dB</span> &middot; Best: <span class="v" id="as-best">— dB</span></div>
-  </div>
-  <div class="islands" id="islands"></div>
-  <div class="arena-btm">
-    <div class="psnr-race">
-      <div class="race-title">📊 Live PSNR Race <span class="step" id="race-step">step 0 / 2000</span></div>
-      <canvas class="race-canvas" id="c-race"></canvas>
-    </div>
-    <div class="ledger">
-      <div class="ledger-title">📚 Knowledge Ledger <span class="badge">COMPOUNDS ACROSS GENS</span></div>
-      <div class="ledger-body" id="ledger-body"></div>
-    </div>
-  </div>
-</div>
-
-<!-- DISCOVERY MOMENT -->
-<div class="discovery-modal" id="discovery-modal">
-  <div class="discovery-card">
-    <div class="discovery-tag">★ NOVEL METHOD DISCOVERED ★</div>
-    <div class="discovery-name">NebulaGS</div>
-    <div class="discovery-sub">Physics-Informed Gaussian Splatting for Volumetric Emission</div>
-    <div class="discovery-stats">
-      <div class="dstat"><div class="dstat-l">PSNR</div><div class="dstat-v gold">31.72</div></div>
-      <div class="dstat"><div class="dstat-l">Δ Baseline</div><div class="dstat-v pos">+3.42</div></div>
-      <div class="dstat"><div class="dstat-l">Generations</div><div class="dstat-v">3</div></div>
-    </div>
-    <div class="discovery-techs">
-      <b>Techniques emerged through cross-generation knowledge transfer:</b>
-      <div class="dtech"><div class="dtech-i">L1</div><div class="dtech-t">Linear warmup on physics losses (0 → 0.008) over first <code>3k</code> steps — gentle priors, not hard constraints</div></div>
-      <div class="dtech"><div class="dtech-i">L2</div><div class="dtech-t">Opacity ceiling at <code>0.95</code> instead of pushing to 0.5 — preserves emission semantics</div></div>
-      <div class="dtech"><div class="dtech-i">L3</div><div class="dtech-t">Per-Gaussian <code>emission_rgb</code> parameter (synthesized from Gen 1 + 2 winners)</div></div>
-      <div class="dtech"><div class="dtech-i">L4</div><div class="dtech-t">Multi-scale L1 reconstruction loss (<code>λ=0.5</code>) — cooperates with main L1, stable</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- RESULT -->
-<div class="sp" id="s-result">
-  <div class="res-vid">
-    <video id="result-vid" autoplay loop muted playsinline>
-      <source src="https://city-super.github.io/scaffold-gs/static/images/DrJohnson_ours_cr.mp4" type="video/mp4">
-    </video>
-    <div class="res-overlay"><span class="rec"></span>nebulags · garden · 30k × 3 gens</div>
-    <div class="vid-loading" id="vid-load">Rendering NebulaGS output...</div>
-  </div>
-  <div class="res-stats">
-    <div class="fcard" id="fcard">
-      <h3>🏆 Discovery Complete</h3>
-      <div class="psnr-big">31.72 dB</div>
-      <div class="psnr-tgt">Baseline: 28.30 dB &middot; <span class="badge badge-disc">+3.42 dB</span> <span class="badge badge-ok">✓ BEAT</span></div>
-      <div class="fstat"><span class="fl">Discovered</span><span class="fv pink">NebulaGS</span></div>
-      <div class="fstat"><span class="fl">Dataset</span><span class="fv">mipnerf360 / garden</span></div>
-      <div class="fstat"><span class="fl">Islands Trained</span><span class="fv">24 (8 × 3 gens)</span></div>
-      <div class="fstat"><span class="fl">Knowledge Entries</span><span class="fv gold">17</span></div>
-      <div class="fstat"><span class="fl">Debug Fixes</span><span class="fv">3 cycles</span></div>
-      <div class="fstat"><span class="fl">Tokens</span><span class="fv">3,184,502</span></div>
-      <div class="fstat"><span class="fl">Cost</span><span class="fv g">$12.84</span></div>
-      <div class="fstat"><span class="fl">Duration</span><span class="fv">47m 12s</span></div>
-    </div>
-    <div class="ffiles" id="ffiles"><h4><span>📦 Generated Package</span><span style="margin-left:auto;color:var(--muted);font-weight:400">9 files</span></h4></div>
-  </div>
-</div>
-`;
-}
-
-/* ── TYPING HELPERS ── */
-async function tl(c,html,d){const div=document.createElement('div');div.innerHTML=html;c.appendChild(div);c.scrollTop=c.scrollHeight;await sleep(d||60)}
-
-/* ═══ PHASE: PAPER ═══ */
-async function pPaper(){
-  showSt('s-paper');await sleep(300);
-  $('#paper-card').classList.add('show');await sleep(900);
-  const eqs=['∑αᵢTᵢcᵢ (splat comp.)','Σₖ = R·S·SᵀRᵀ','SH(d,l,m)',
-    'L_emis=||eᵢ-λₑ·rgbᵢ||²','L_spec=TV(SH₁)','L_dens∝∇μ|rad|'];
-  const eq=$('#eqs');
-  for(const e of eqs){const s=document.createElement('span');s.className='eq';s.textContent=e;eq.appendChild(s);await sleep(100);s.classList.add('on')}
-}
-
-/* ═══ PHASE: PARSE ═══ */
-async function pParse(){
-  showSt('s-parse');const t=$('#t-parse');
-  const L=[
-    ['<span class="tc">$ Downloading arXiv:2404.13247...</span>',160],
-    ['  <span class="td">→ https://arxiv.org/pdf/2404.13247.pdf</span>',100],
-    ['  <span class="td">→ Saved to workspace/paper.pdf (3.1 MB)</span>',180],
-    ['',60],
-    ['<span class="tc">$ Running MinerU PDF extraction...</span>',180],
-    ['  <span class="tcy">[MinerU]</span> Processing 14 pages...',130],
-    ['  <span class="tcy">[MinerU]</span> Detected: <span class="tb">19 equations</span>, 7 figures, 5 tables',140],
-    ['  <span class="tcy">[MinerU]</span> Extracted 18,942 tokens',110],
-    ['',50],
-    ['<span class="tc">$ Cleaning markdown for GS implementation...</span>',150],
-    ['  <span class="td">→ Preserved 19 equations, pruned narrative</span>',90],
-    ['  <span class="td">→ Kept densification/pruning details</span>',90],
-    ['  <span class="td">→ Kept per-Gaussian parameter specs</span>',90],
-    ['',40],
-    ['<span class="tc">$ Citation recovery (WebSearch)...</span>',150],
-    ['  <span class="tpk">→ 3DGS (Kerbl 2023)</span> <span class="td">— SH degree, densification</span>',100],
-    ['  <span class="tpk">→ gsplat 1.4.0</span> <span class="td">— rasterization API</span>',100],
-    ['  <span class="tpk">→ SplatfactoModel</span> <span class="td">— nerfstudio base class</span>',100],
-    ['',40],
-    ['<span style="color:var(--green)">✓ cleaned_paper.md (6,842 tokens) — ready for planner</span>',0],
-  ];
-  for(const[h,d]of L)await tl(t,h,d);
-  const items=$('#parse-items');
-  for(const txt of ['19 equations preserved','5 novel contributions','4 loss functions identified','3 new per-Gaussian params']){
-    const d=document.createElement('div');
-    d.style.cssText='font-size:.65rem;color:var(--green);opacity:0;transform:translateX(6px);transition:all .3s';
-    d.textContent='✓ '+txt;items.appendChild(d);await sleep(80);d.style.opacity='1';d.style.transform='translateX(0)';
-  }
-}
-
-/* ═══ PHASE: PLANNER (DAG) ═══ */
-function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath()}
-
-async function pPlan(){
-  showSt('s-plan');
-  const cv=$('#c-dag');cv.width=cv.offsetWidth*2;cv.height=cv.offsetHeight*2;
-  const c=cv.getContext('2d');c.scale(2,2);
-  const W=cv.offsetWidth,H=cv.offsetHeight;
-  const B=[
-    {l:'SplatfactoModel',x:W*.04,y:H*.08,w:125,h:30,col:'#64748b',sub:'base'},
-    {l:'populate_modules',x:W*.03,y:H*.46,w:140,h:30,col:'#7c3aed',sub:'+emission'},
-    {l:'get_outputs',    x:W*.27,y:H*.46,w:130,h:30,col:'#7c3aed',sub:'2-pass'},
-    {l:'losses',         x:W*.53,y:H*.23,w:130,h:30,col:'#db2777',sub:'4 novel'},
-    {l:'split_gaussians',x:W*.53,y:H*.66,w:140,h:30,col:'#7c3aed',sub:'emission split'},
-    {l:'configs.py',     x:W*.80,y:H*.08,w:110,h:30,col:'#ca8a04',sub:'MethodSpec'},
-    {l:'datamanager',    x:W*.80,y:H*.46,w:120,h:30,col:'#4f46e5',sub:'optional'},
-    {l:'MethodSpec',     x:W*.80,y:H*.80,w:120,h:30,col:'#059669',sub:'ns entry'},
-  ];
-  const A=[[0,1],[0,2],[1,3],[2,3],[1,4],[2,4],[3,5],[4,7],[5,7],[6,7]];
-  for(let i=0;i<B.length;i++){
-    await sleep(280);c.clearRect(0,0,W,H);
-    for(const[a,b]of A)if(a<=i&&b<=i){const ba=B[a],bb=B[b];
-      c.beginPath();c.moveTo(ba.x+ba.w,ba.y+ba.h/2);
-      c.bezierCurveTo(ba.x+ba.w+20,ba.y+ba.h/2,bb.x-20,bb.y+bb.h/2,bb.x,bb.y+bb.h/2);
-      c.strokeStyle='rgba(100,116,139,.45)';c.lineWidth=1.2;c.setLineDash([3,3]);c.stroke();c.setLineDash([])}
-    for(let j=0;j<=i;j++){const b=B[j];
-      c.fillStyle='#ffffff';c.strokeStyle=b.col;c.lineWidth=1.5;
-      rr(c,b.x,b.y,b.w,b.h,6);c.fill();c.stroke();
-      c.fillStyle=b.col;c.font='bold 10px system-ui';c.textAlign='center';
-      c.fillText(b.l,b.x+b.w/2,b.y+14);
-      c.fillStyle='#64748b';c.font='9px monospace';
-      c.fillText(b.sub,b.x+b.w/2,b.y+25);
-    }
-  }
-  const exts=[
-    'populate_modules() — per-Gaussian emission_rgb',
-    'get_outputs() — 2-pass emission compositing',
-    'compute_custom_losses() — 4 physics priors',
-    'split_gaussians() — propagate emission',
-    'get_gaussian_param_groups() — emission LR',
-  ];
-  const host=$('#tv-exts');
-  for(const e of exts){const d=document.createElement('div');d.className='tier-ext';d.textContent=e;host.appendChild(d);await sleep(120);d.classList.add('on')}
-}
-
-/* ═══ PHASE: CODER — gs_template package ═══ */
-const FILES=[
-  {name:'__init__.py',lines:[
-    [1,'<span class="cm"># nebulagen — paper2code baseline (Gen 0)</span>'],
-    [2,'<span class="kw">from</span> .model <span class="kw">import</span> NebulaGenModel, NebulaGenModelConfig'],
-    [3,'<span class="kw">from</span> .configs <span class="kw">import</span> nebulagen_method'],
-    [4,''],
-    [5,'__all__ = [<span class="str">"NebulaGenModel"</span>, <span class="str">"NebulaGenModelConfig"</span>, <span class="str">"nebulagen_method"</span>]'],
-  ]},
-  {name:'model.py',lines:[
-    [1,'<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field'],
-    [2,'<span class="kw">from</span> nerfstudio.models.splatfacto <span class="kw">import</span> SplatfactoModelConfig'],
-    [3,'<span class="kw">from</span> gs_template.model <span class="kw">import</span> GSTemplateModel'],
-    [4,'<span class="kw">from</span> .losses <span class="kw">import</span> emission_prior, spectral_tv, radiance_density'],
-    [5,''],
-    [6,'<span class="dec">@dataclass</span>'],
-    [7,'<span class="kw">class</span> <span class="cls">NebulaGenModelConfig</span>(SplatfactoModelConfig):'],
-    [8,'    _target: type = field(default_factory=<span class="kw">lambda</span>: NebulaGenModel)'],
-    [9,'    emission_lr: <span class="cls">float</span> = <span class="num">0.0025</span>'],
-    [10,'    lambda_emission: <span class="cls">float</span> = <span class="num">0.05</span>'],
-    [11,'    lambda_spectral: <span class="cls">float</span> = <span class="num">0.02</span>'],
-    [12,''],
-    [13,'<span class="kw">class</span> <span class="cls">NebulaGenModel</span>(GSTemplateModel):'],
-    [14,'    <span class="kw">def</span> <span class="fn">populate_modules</span>(<span class="slf">self</span>):'],
-    [15,'        <span class="fn">super</span>().populate_modules()'],
-    [16,'        N = <span class="slf">self</span>.gauss_params[<span class="str">"means"</span>].shape[<span class="num">0</span>]'],
-    [17,'        <span class="slf">self</span>.gauss_params[<span class="str">"emission"</span>] = Parameter(torch.zeros(N, <span class="num">3</span>))'],
-    [18,''],
-    [19,'    <span class="kw">def</span> <span class="fn">compute_custom_losses</span>(<span class="slf">self</span>, outputs, batch, metrics_dict=<span class="kw">None</span>):'],
-    [20,'        cfg = <span class="slf">self</span>.config'],
-    [21,'        emis = <span class="slf">self</span>.gauss_params[<span class="str">"emission"</span>]'],
-    [22,'        <span class="kw">return</span> {'],
-    [23,'            <span class="str">"emission_prior"</span>: cfg.lambda_emission * <span class="fn">emission_prior</span>(emis),'],
-    [24,'            <span class="str">"spectral_tv"</span>: cfg.lambda_spectral * <span class="fn">spectral_tv</span>(<span class="slf">self</span>.features_dc),'],
-    [25,'        }'],
-  ]},
-  {name:'losses.py',lines:[
-    [1,'<span class="kw">import</span> torch'],
-    [2,'<span class="kw">import</span> torch.nn.functional <span class="kw">as</span> F'],
-    [3,''],
-    [4,'<span class="kw">def</span> <span class="fn">emission_prior</span>(emission):'],
-    [5,'    <span class="cm"># encourages sparse, non-negative emission</span>'],
-    [6,'    <span class="kw">return</span> F.<span class="fn">relu</span>(-emission).<span class="fn">mean</span>() + <span class="num">0.01</span> * emission.<span class="fn">abs</span>().<span class="fn">mean</span>()'],
-    [7,''],
-    [8,'<span class="kw">def</span> <span class="fn">spectral_tv</span>(features_dc):'],
-    [9,'    <span class="cm"># total variation across SH DC component channels</span>'],
-    [10,'    <span class="kw">return</span> (features_dc[:, <span class="num">1</span>:] - features_dc[:, :-<span class="num">1</span>]).<span class="fn">pow</span>(<span class="num">2</span>).<span class="fn">mean</span>()'],
-    [11,''],
-    [12,'<span class="kw">def</span> <span class="fn">radiance_density</span>(means, colors):'],
-    [13,'    <span class="cm"># placeholder for radiance-gradient densification signal</span>'],
-    [14,'    <span class="kw">return</span> colors.<span class="fn">norm</span>(dim=-<span class="num">1</span>).<span class="fn">mean</span>()'],
-  ]},
-  {name:'rendering.py',lines:[
-    [1,'<span class="kw">from</span> gs_template.rendering <span class="kw">import</span> ('],
-    [2,'    prepare_camera, gather_base_params, crop_custom_param,'],
-    [3,'    rasterize_gaussians, assemble_outputs,'],
-    [4,')'],
-    [5,''],
-    [6,'<span class="kw">def</span> <span class="fn">two_pass_render</span>(model, camera):'],
-    [7,'    cam, crop = <span class="fn">prepare_camera</span>(model, camera)'],
-    [8,'    <span class="kw">if</span> cam <span class="kw">is</span> <span class="kw">None</span>: <span class="kw">return</span> crop'],
-    [9,'    means, quats, scales, op, cols = <span class="fn">gather_base_params</span>(model, crop)'],
-    [10,'    emission = <span class="fn">crop_custom_param</span>(model.gauss_params[<span class="str">"emission"</span>], crop)'],
-    [11,'    <span class="cm"># blend emission into radiance pre-raster</span>'],
-    [12,'    cols = cols + emission.<span class="fn">clamp_min</span>(<span class="num">0</span>).<span class="fn">unsqueeze</span>(<span class="num">1</span>)'],
-    [13,'    render, alpha, info = <span class="fn">rasterize_gaussians</span>('],
-    [14,'        model, means, quats, scales, op, cols,'],
-    [15,'        cam[<span class="str">"viewmat"</span>], cam[<span class="str">"K"</span>], cam[<span class="str">"W"</span>], cam[<span class="str">"H"</span>])'],
-    [16,'    <span class="kw">return</span> <span class="fn">assemble_outputs</span>(model, render, alpha, info, cam)'],
-  ]},
-  {name:'configs.py',lines:[
-    [1,'<span class="kw">from</span> nerfstudio.plugins.types <span class="kw">import</span> MethodSpecification'],
-    [2,'<span class="kw">from</span> nerfstudio.configs.base_config <span class="kw">import</span> TrainerConfig'],
-    [3,'<span class="kw">from</span> .model <span class="kw">import</span> NebulaGenModelConfig'],
-    [4,''],
-    [5,'nebulagen_method = <span class="fn">MethodSpecification</span>('],
-    [6,'    config=<span class="fn">TrainerConfig</span>('],
-    [7,'        method_name=<span class="str">"nebulagen"</span>,'],
-    [8,'        steps_per_eval_batch=<span class="num">500</span>,'],
-    [9,'        max_num_iterations=<span class="num">30000</span>,'],
-    [10,'        pipeline=<span class="fn">VanillaPipelineConfig</span>(model=<span class="fn">NebulaGenModelConfig</span>()),'],
-    [11,'    ),'],
-    [12,'    description=<span class="str">"Gaussian Splatting with per-Gaussian emission (paper2code baseline)"</span>,'],
-    [13,')'],
-  ]},
-  {name:'datamanager.py',lines:[
-    [1,'<span class="kw">from</span> gs_template.datamanagers <span class="kw">import</span> BaseGSDataManager'],
-    [2,''],
-    [3,'<span class="cm"># reuse framework default — no custom preprocessing needed</span>'],
-    [4,'<span class="cm"># (emission prior is scene-agnostic, not image-level)</span>'],
-    [5,''],
-    [6,'NebulaGenDataManagerConfig = BaseGSDataManager.default_config()'],
-  ]},
-  {name:'pyproject.toml',lines:[
-    [1,'<span class="cls">[project]</span>'],
-    [2,'<span class="key">name</span> = <span class="str">"nebulagen"</span>'],
-    [3,'<span class="key">version</span> = <span class="str">"0.1.0"</span>'],
-    [4,'<span class="key">dependencies</span> = [<span class="str">"nerfstudio&gt;=1.1.0"</span>, <span class="str">"gsplat&gt;=1.4"</span>]'],
-    [5,''],
-    [6,'<span class="cls">[project.entry-points."nerfstudio.method_configs"]</span>'],
-    [7,'<span class="key">nebulagen</span> = <span class="str">"nebulagen.configs:nebulagen_method"</span>'],
-  ]},
-  {name:'README.md',lines:[
-    [1,'<span class="tb"># NebulaGen — paper2code baseline</span>'],
-    [2,'<span class="td">Generated by Splatify pipeline from arXiv:2404.13247.</span>'],
-    [3,'<span class="td">Extends SplatfactoModel via gs_template framework.</span>'],
-    [4,''],
-    [5,'<span class="tb">## Install</span>'],
-    [6,'<span class="tc">pip install -e .</span>'],
-    [7,'<span class="tc">ns-install-cli</span>'],
-    [8,''],
-    [9,'<span class="tb">## Train</span>'],
-    [10,'<span class="tc">ns-train nebulagen --data &lt;path&gt;</span>'],
-  ]},
-];
-
-async function pCode(){
-  showSt('s-code');
-  const tree=$('#ftree'),tabs=$('#ed-tabs'),body=$('#ed-body');
-  const treeItems=[];
-  const folder=document.createElement('div');folder.className='ft-item on';
-  folder.innerHTML='<span class="ft-icon">📁</span>nebulagen/';tree.appendChild(folder);
-  for(const f of FILES){
-    const item=document.createElement('div');item.className='ft-item';item.dataset.name=f.name;
-    item.innerHTML=`<span class="ft-icon">📄</span>${f.name}`;
-    tree.appendChild(item);treeItems.push(item);
-  }
-  for(const f of FILES){
-    const tab=document.createElement('div');tab.className='etab';tab.textContent=f.name;tabs.appendChild(tab);
-  }
-  await sleep(200);
-  for(let fi=0;fi<FILES.length;fi++){
-    const f=FILES[fi];
-    treeItems.forEach(t=>t.classList.remove('act'));
-    treeItems[fi].classList.add('on','act');
-    if(fi>0){treeItems[fi-1].classList.remove('act');treeItems[fi-1].classList.add('done')}
-    const allTabs=tabs.querySelectorAll('.etab');
-    allTabs.forEach(t=>t.classList.remove('act'));
-    allTabs[fi].classList.add('on','act');
-    body.innerHTML='';
-    for(const[ln,ct]of f.lines){
-      const el=document.createElement('div');el.className='cl';
-      el.innerHTML=`<span class="ln">${ln}</span><span class="ct">${ct}</span>`;
-      body.appendChild(el);await sleep(32);el.classList.add('on');body.scrollTop=body.scrollHeight;
-    }
-    await sleep(fi===1?350:160);
-  }
-  treeItems[treeItems.length-1].classList.remove('act');
-  treeItems[treeItems.length-1].classList.add('done');
-}
-
-/* ═══ PHASE: CRITIC — triple parallel check ═══ */
-async function pCritic(){
-  showSt('s-critic');
-  const rev=[
-    ['pass','All 4 imports resolve'],
-    ['pass','SplatfactoModel API compliance'],
-    ['pass','<code>gsplat.rasterize</code> signature OK'],
-    ['warn','Consider: add <code>LPIPS</code> to deps'],
-    ['pass','No circular imports'],
-  ];
-  const val=[
-    ['pass','per-Gaussian <code>emission</code> param (§3.1) ✓'],
-    ['pass','emission_prior loss (eq 6) ✓'],
-    ['pass','spectral TV loss (eq 8) ✓'],
-    ['warn','radiance_density stub (§3.3) — will evolve'],
-    ['pass','2-pass render (§4.2) ✓'],
-  ];
-  const int=[
-    ['pass','<code>method_name="nebulagen"</code> × 3 files'],
-    ['pass','pyproject.toml entry point matches'],
-    ['pass','MethodSpec → configs.py wired'],
-    ['pass','No orphan imports'],
-    ['pass','<code>pip install -e .</code> will succeed'],
-  ];
-  const fill=async(id,items)=>{const host=$(id);
-    for(const[t,txt]of items){
-      const d=document.createElement('div');d.className='critic-item';
-      d.innerHTML=`<span class="critic-ii">${t==='pass'?'✓':'⚠'}</span><span>${txt}</span>`;
-      host.appendChild(d);await sleep(150);d.classList.add('on',t);
-    }
-  };
-  await Promise.all([fill('#cr-rev',rev),fill('#cr-val',val),fill('#cr-int',int)]);
-}
-
-/* ═══ PHASE: TEST + DEBUG ═══ */
-async function pTest(){
-  showSt('s-test');const t=$('#t-test');
-  const L=[
-    ['<span class="tc">$ conda activate nerfstudio</span>',150],
-    ['<span class="tc">$ cd generated/nebulagen && pip install -e .</span>',200],
-    ['  <span class="td">Installing nebulagen-0.1.0...</span>',150],
-    ['  <span style="color:var(--green)">Successfully installed nebulagen-0.1.0</span>',200],
-    ['<span class="tc">$ ns-install-cli</span>',160],
-    ['  <span style="color:var(--green)">Registered method: nebulagen ✓</span>',200],
-    ['',50],
-    ['<span class="tc">$ ns-train nebulagen --data data/garden --max-num-iterations 10</span>',200],
-    ['  <span class="td">[gsplat 1.4.0] rasterize_gaussians compiled</span>',140],
-    ['  <span class="td">Step 1/10  loss=2.412  psnr=11.20</span>',110],
-  ];
-  for(const[h,d]of L)await tl(t,h,d);
-}
-async function pTestErr(){
-  const t=$('#t-test');
-  const L=[['',40],
-    ['<span class="te">RuntimeError in compute_custom_losses:</span>',90],
-    ['<span class="te">  emission param not in gauss_params during split()</span>',70],
-    ['<span class="te">  (densification skipped the new parameter)</span>',0],
-  ];for(const[h,d]of L)await tl(t,h,d);
-}
-async function pDebug(){
-  const t=$('#t-debug');
-  const L=[
-    ['<span class="tcy">Analyzing gsplat error...</span>',280],
-    ['',60],
-    ['<span class="tb">Category:</span> extension_point_missed',150],
-    ['<span class="tb">Root cause:</span> <code>split_gaussians()</code> not overridden',150],
-    ['  new params skipped by densifier',200],
-    ['',90],
-    ['<span class="tb">Fix:</span> implement GS extension point #4',200],
-    ['',60],
-    ['<span class="te">--- model.py</span>',100],
-    ['<span style="color:var(--green)">+ def split_gaussians(self, split_mask, samps):</span>',130],
-    ['<span style="color:var(--green)">+     new = super().split_gaussians(split_mask, samps)</span>',130],
-    ['<span style="color:var(--green)">+     new["emission"] = repeat(emis[split_mask], samps)</span>',180],
-    ['<span style="color:var(--green)">+     return new</span>',100],
-    ['',80],['<span style="color:var(--green)">✓ Fix applied — re-testing</span>',0],
-  ];for(const[h,d]of L)await tl(t,h,d);
-}
-async function pRetest(){
-  const t=$('#t-test');
-  const L=[['',80],
-    ['<span class="tc">$ ns-train nebulagen --data data/garden --max-num-iterations 10</span>',180],
-    ['  <span class="td">Step  1/10  loss=2.211  psnr=11.83</span>',90],
-    ['  <span class="td">Step  5/10  loss=1.018  psnr=22.41</span>',110],
-    ['  <span class="td">Step 10/10  loss=0.542  psnr=26.14</span>',140],
-    ['<span style="color:var(--green)">✓ smoke test passed — baseline ready for Arena</span>',0],
-  ];for(const[h,d]of L)await tl(t,h,d);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   KNOWLEDGE DISCOVERY ARENA
-   ═══════════════════════════════════════════════════════════════ */
-
-const STRATS=[
-  {em:'L',code:'loss',   name:'Loss Engineering',   col:'#7c3aed'},
-  {em:'D',code:'dens',   name:'Densification',      col:'#db2777'},
-  {em:'O',code:'opt',    name:'LR & Optimizer',     col:'#0284c7'},
-  {em:'R',code:'rend',   name:'Rendering',          col:'#f59e0b'},
-  {em:'P',code:'param',  name:'New Params',         col:'#10b981'},
-  {em:'G',code:'reg',    name:'Regularization',     col:'#4f46e5'},
-  {em:'T',code:'sched',  name:'Training Schedule',  col:'#06b6d4'},
-  {em:'W',code:'web',    name:'Web-Inspired',       col:'#ec4899'},
-];
-
-// Gen 1: 8 islands, target PSNR after 2k iters (baseline 28.3). Show growth.
-// Then down-select to 4. Then Round 2 (7k). Then Round 3 (30k).
-// Then Gen 2 starts with 8 fresh variations on winner. Etc.
-const GENS=[
-  { // Gen 1
-    idx:1, base:28.30,
-    isles:[
-      {s:0,final:29.05,log:'+LPIPS @0.05 weight',fate:'survived',r2:29.80,r3:30.12},
-      {s:1,final:28.85,log:'grad-based split threshold',fate:'eliminated'},
-      {s:2,final:27.40,log:'warmup → cosine LR',fate:'eliminated'},
-      {s:3,final:29.22,log:'higher SH degree 3→4',fate:'survived',r2:29.95,r3:30.34},
-      {s:4,final:28.10,log:'emission param added (too aggressive)',fate:'eliminated'},
-      {s:5,final:29.08,log:'opacity entropy λ=0.01',fate:'survived',r2:29.61},
-      {s:6,final:26.80,log:'progressive resolution (destabilized)',fate:'eliminated'},
-      {s:7,final:29.11,log:'Mini-Splatting densification',fate:'survived',r2:29.52},
-    ],
-    winner:3, // SH degree — round 3 beats the rest
-  },
-  { // Gen 2 - built on SH-degree-4 winner
-    idx:2, base:30.34,
-    isles:[
-      {s:0,final:30.58,log:'+LPIPS @0.02 (milder)',fate:'survived',r2:30.82,r3:30.95},
-      {s:1,final:30.12,log:'2D gradient renorm split',fate:'eliminated'},
-      {s:2,final:30.78,log:'split optimizer: position warmup',fate:'survived',r2:31.05,r3:31.18},
-      {s:3,final:29.44,log:'anti-aliased raster (crashed)',fate:'eliminated'},
-      {s:4,final:30.99,log:'per-Gaussian emission_rgb + gentle prior',fate:'survived',r2:31.28,r3:31.40},
-      {s:5,final:30.44,log:'opacity ceiling 0.95 (no hard 1.0)',fate:'survived',r2:30.88},
-      {s:6,final:30.21,log:'delayed SSIM → 7k',fate:'eliminated'},
-      {s:7,final:30.12,log:'GOF geometry filter',fate:'eliminated'},
-    ],
-    winner:4, // emission_rgb
-  },
-  { // Gen 3 - synthesis
-    idx:3, base:31.40,
-    isles:[
-      {s:0,final:31.52,log:'LPIPS + perceptual SSIM blend',fate:'survived',r2:31.61,r3:31.66},
-      {s:1,final:30.98,log:'radiance-gradient densify',fate:'eliminated'},
-      {s:2,final:31.44,log:'position warmup + cosine anneal',fate:'survived',r2:31.55},
-      {s:3,final:31.30,log:'SH degree 4 (already baseline)',fate:'eliminated'},
-      {s:4,final:31.72,log:'emission + opacity ceiling + multi-scale L1 (synthesis!)',fate:'survived',r2:31.72,r3:31.72},
-      {s:5,final:31.10,log:'scale flatten regularizer',fate:'eliminated'},
-      {s:6,final:31.22,log:'linear physics-loss warmup 0→0.008',fate:'survived',r2:31.32},
-      {s:7,final:31.18,log:'Pixel-GS grad-normalization',fate:'eliminated'},
-    ],
-    winner:4, // the synthesis — becomes NebulaGS
-  },
-];
-
-const LEDGER_FLOW=[
-  // Generation 1
-  {g:1,t:'worked',  txt:'<span class="tag">G1/L</span>LPIPS @0.05 adds +0.75 dB — keep as reusable component'},
-  {g:1,t:'worked',  txt:'<span class="tag">G1/P</span>SH degree 3 → 4 gives +0.92 dB — promote to base'},
-  {g:1,t:'failed',  txt:'<span class="tag">G1/T</span>Progressive resolution training destabilizes — avoid'},
-  {g:1,t:'failed',  txt:'<span class="tag">G1/P</span>Raw emission param (weight 0.3) fights reconstruction'},
-  // Generation 2
-  {g:2,t:'worked',  txt:'<span class="tag">G2/O</span>Position-only warmup + global cosine — stable +0.84 dB'},
-  {g:2,t:'worked',  txt:'<span class="tag">G2/P</span>Emission WITH gentle prior (λ=0.01) — winning approach'},
-  {g:2,t:'worked',  txt:'<span class="tag">G2/G</span>Opacity ceiling 0.95 — preserves emission semantics'},
-  {g:2,t:'failed',  txt:'<span class="tag">G2/R</span>Anti-aliased rasterizer crashes on gsplat 1.4 — skip'},
-  // Generation 3
-  {g:3,t:'worked',  txt:'<span class="tag">G3/T</span>Linear warmup 0→0.008 on physics losses over 3k steps'},
-  {g:3,t:'synthesis',txt:'<b>SYNTHESIS</b> — combine: emission (G2/P) + ceiling (G2/G) + multi-scale L1'},
-  {g:3,t:'synthesis',txt:'<b>EMERGENT</b> — multi-scale L1 is novel; cooperates with main L1'},
-  {g:3,t:'worked',  txt:'<span class="tag">G3/R</span>LPIPS + perceptual SSIM blend — robust +0.26 dB'},
-  {g:3,t:'synthesis',txt:'<b>★ NAME: NebulaGS</b> — all insights converge into one coherent method'},
-];
-
-function buildIslandCards(){
-  const host=$('#islands');host.innerHTML='';
-  STRATS.forEach((s,i)=>{
-    const el=document.createElement('div');el.className='isl';el.id='isl-'+i;
-    el.innerHTML=`
-      <div class="isl-head">
-        <div class="isl-em" style="background:${s.col}">${s.em}</div>
-        <div class="isl-name">${s.name}</div>
-        <div class="isl-id">C${i+1}</div>
-      </div>
-      <div style="display:flex;align-items:baseline;gap:.3rem">
-        <div class="isl-psnr" id="isl-psnr-${i}">—</div>
-        <div style="font-size:.55rem;color:var(--dim);font-family:var(--font-mono)">dB</div>
-      </div>
-      <div class="isl-bar-wrap"><div class="isl-bar" id="isl-bar-${i}" style="width:0"></div></div>
-      <div class="isl-status" id="isl-st-${i}">waiting...</div>`;
-    host.appendChild(el);
+function markTabDone(file){
+  document.querySelectorAll('.tab').forEach(t=>{
+    if(t.dataset.file===file) t.classList.add('done');
   });
 }
 
-async function revealIslands(gen){
-  const cards=$$('.isl');
-  cards.forEach(c=>{c.className='isl';c.querySelector('.isl-bar').style.width='0';
-    c.querySelector('.isl-bar').style.background='';
-    c.querySelector('.isl-psnr').textContent='—';
-    c.querySelector('.isl-status').textContent='waiting...';
-    c.querySelector('.isl-status').className='isl-status';
-  });
-  await sleep(100);
-  for(let i=0;i<cards.length;i++){
-    cards[i].classList.add('on','alive');
-    $('#isl-st-'+i).textContent='strategy: '+gen.isles[i].log.substring(0,36);
-    await sleep(100);
-  }
-}
+const FIELD_CODE = [
+'"""NeRF radiance field — generated by Nerfify."""',
+'from typing import Tuple',
+'import torch',
+'from torch import nn, Tensor',
+'',
+'from nerfstudio.field_components.encodings import NeRFEncoding',
+'from nerfstudio.field_components.field_heads import FieldHeadNames',
+'from nerfstudio.fields.base_field import Field',
+'',
+'',
+'class NeRFField(Field):',
+'    """Vanilla NeRF MLP with positional encoding (Mildenhall et al., 2020)."""',
+'',
+'    def __init__(',
+'        self,',
+'        num_layers: int = 8,',
+'        hidden_dim: int = 256,',
+'        num_freqs_pos: int = 10,   # L = 10',
+'        num_freqs_dir: int = 4,    # L = 4',
+'    ) -> None:',
+'        super().__init__()',
+'        self.pos_enc = NeRFEncoding(in_dim=3, num_frequencies=num_freqs_pos)',
+'        self.dir_enc = NeRFEncoding(in_dim=3, num_frequencies=num_freqs_dir)',
+'',
+'        in_dim = self.pos_enc.get_out_dim()',
+'        layers = []',
+'        for i in range(num_layers):',
+'            layers.append(nn.Linear(in_dim if i == 0 else hidden_dim, hidden_dim))',
+'            layers.append(nn.ReLU(inplace=True))',
+'        self.mlp = nn.Sequential(*layers)',
+'        self.sigma_head = nn.Linear(hidden_dim, 1)',
+'        self.rgb_head   = nn.Linear(hidden_dim + self.dir_enc.get_out_dim(), 3)',
+'',
+'    def forward(self, positions: Tensor, directions: Tensor):',
+'        h = self.mlp(self.pos_enc(positions))',
+'        sigma = torch.relu(self.sigma_head(h))',
+'        rgb = torch.sigmoid(self.rgb_head(torch.cat([h, self.dir_enc(directions)], -1)))',
+'        return {FieldHeadNames.DENSITY: sigma, FieldHeadNames.RGB: rgb}',
+];
 
-/* Animated PSNR race: target is gen.isles[i].final. Each card grows toward target with noise. */
-let raceState=null;
-function raceStart(gen,duration,stepMax,showR=1,selectFate=true,updateSurvivors=null){
-  const cv=$('#c-race');const c=cv.getContext('2d');
-  const baseline=gen.base;
-  raceState={
-    gen, duration, stepMax, showR, selectFate,
-    t0:performance.now(),
-    targets:gen.isles.map((isl,i)=>{
-      if(showR===1) return isl.final;
-      if(showR===2) return isl.r2!==undefined?isl.r2:isl.final;
-      return isl.r3!==undefined?isl.r3:(isl.r2!==undefined?isl.r2:isl.final);
-    }),
-    starts:(function(){
-      if(showR===1) return new Array(8).fill(baseline);
-      if(showR===2) return gen.isles.map(isl=>isl.r1!==undefined?isl.r1:isl.final);
-      return gen.isles.map(isl=>isl.r2!==undefined?isl.r2:isl.final);
-    })(),
-    survivors: updateSurvivors,
-    finalized:false,
-  };
-  raceAnimRunning=true;raceTick();
-}
-function raceTick(){
-  if(!raceAnimRunning||!raceState)return;
-  const {gen,duration,stepMax,t0,targets,starts,selectFate,survivors,showR}=raceState;
-  const now=performance.now();
-  const prog=clamp((now-t0)/duration,0,1);
-  const step=Math.floor(prog*stepMax);
-  $('#race-step').textContent=`step ${fmt(step)} / ${fmt(stepMax)}`;
-  // Update island cards + bars
-  const psnrMin=26,psnrMax=32.5;
-  for(let i=0;i<8;i++){
-    if(survivors && !survivors.includes(i)) continue;
-    const start=starts[i],tgt=targets[i];
-    // Smooth curve with some noise
-    const easeIn=1-Math.pow(1-prog,1.8);
-    const jitter=.35*Math.sin(now*0.008+i*1.37)+.22*Math.cos(now*0.011+i*0.83);
-    const v=lerp(start,tgt,easeIn)+jitter*(1-prog);
-    $('#isl-psnr-'+i).textContent=v.toFixed(2);
-    const barPct=clamp((v-psnrMin)/(psnrMax-psnrMin),0,1)*100;
-    $('#isl-bar-'+i).style.width=barPct+'%';
-    const card=$('#isl-'+i);
-    if(!card.classList.contains('training')&&!card.classList.contains('debugging')){
-      card.classList.add('training');
-    }
-    $('#isl-st-'+i).textContent=`training step ${fmt(step)}`;
-  }
-  drawRace();
-  if(prog<1)requestAnimationFrame(raceTick);
-  else{
-    raceAnimRunning=false;raceState.finalized=true;
-    if(selectFate)finalizeRound(gen,showR,survivors);
-  }
-}
+const MODEL_CODE = [
+'"""NeRF model — coarse + fine network with hierarchical sampling."""',
+'from dataclasses import dataclass',
+'import torch',
+'from nerfstudio.models.base_model import Model, ModelConfig',
+'from nerfstudio.model_components.renderers import RGBRenderer',
+'from nerfstudio.model_components.ray_samplers import UniformSampler, PDFSampler',
+'',
+'from .template_field import NeRFField',
+'',
+'',
+'@dataclass',
+'class NeRFModelConfig(ModelConfig):',
+'    num_coarse_samples: int = 64    # N_c',
+'    num_fine_samples:   int = 128   # N_f',
+'',
+'',
+'class NeRFModel(Model):',
+'    config: NeRFModelConfig',
+'',
+'    def populate_modules(self) -> None:',
+'        super().populate_modules()',
+'        self.field_coarse = NeRFField()',
+'        self.field_fine   = NeRFField()',
+'        self.sampler_uniform = UniformSampler(num_samples=self.config.num_coarse_samples)',
+'        self.sampler_pdf     = PDFSampler(num_samples=self.config.num_fine_samples)',
+'        self.renderer_rgb    = RGBRenderer()',
+'',
+'    def get_loss_dict(self, outputs, batch, metrics_dict=None):',
+'        gt = batch["image"].to(outputs["rgb_coarse"].device)',
+'        loss = ((outputs["rgb_coarse"] - gt) ** 2).mean() + \\',
+'               ((outputs["rgb_fine"]   - gt) ** 2).mean()    # eq. (6)',
+'        return {"rgb_loss": loss}',
+];
 
-function finalizeRound(gen,showR,survivors){
-  const bestIdx=gen.winner;
-  // Determine survivors for this round
-  let srv;
-  if(showR===1){
-    srv=gen.isles.map((isl,i)=>isl.fate==='survived'?i:null).filter(x=>x!==null);
-  } else if(showR===2){
-    // Round 2: those with r2 defined
-    srv=gen.isles.map((isl,i)=>isl.r2!==undefined?i:null).filter(x=>x!==null);
-  } else {
-    srv=[bestIdx];
-  }
-  for(let i=0;i<8;i++){
-    const card=$('#isl-'+i);
-    const isTracked=survivors?survivors.includes(i):true;
-    if(!isTracked)continue;
-    card.classList.remove('training','debugging','alive');
-    if(srv.includes(i)){
-      card.classList.add(showR===3&&i===bestIdx?'winner':'survived');
-      $('#isl-st-'+i).textContent=showR===3&&i===bestIdx?'★ CHAMPION':'survived';
-      if(showR===3&&i===bestIdx)$('#isl-st-'+i).classList.add('win');
-    } else {
-      card.classList.add('eliminated');
-      $('#isl-st-'+i).textContent='eliminated';
-    }
-  }
-  // Update best display
-  const bestPSNR = showR===3 ? gen.isles[bestIdx].r3 : (showR===2 ? Math.max(...srv.map(i=>gen.isles[i].r2||gen.isles[i].final)) : Math.max(...srv.map(i=>gen.isles[i].final)));
-  $('#as-best').textContent=bestPSNR.toFixed(2)+' dB';
-}
+const CONFIG_CODE = [
+'"""NeRFStudio method registration."""',
+'from nerfstudio.engine.optimizers import AdamOptimizerConfig',
+'from nerfstudio.engine.schedulers import ExponentialDecaySchedulerConfig',
+'from nerfstudio.engine.trainer import TrainerConfig',
+'from nerfstudio.plugins.types import MethodSpecification',
+'',
+'from .template_model import NeRFModelConfig',
+'',
+'nerf_method = MethodSpecification(',
+'    config=TrainerConfig(',
+'        method_name="nerfify-vanilla",',
+'        max_num_iterations=200000,',
+'        pipeline=NeRFModelConfig(),',
+'        optimizers={',
+'            "fields": {',
+'                "optimizer": AdamOptimizerConfig(lr=5e-4, eps=1e-8),',
+'                "scheduler": ExponentialDecaySchedulerConfig(lr_final=5e-5),',
+'            },',
+'        },',
+'    ),',
+'    description="Vanilla NeRF — generated end-to-end by Nerfify.",',
+')',
+];
 
-function drawRace(){
-  const cv=$('#c-race');
-  const dpr=window.devicePixelRatio||1;
-  const W=cv.offsetWidth,H=cv.offsetHeight;
-  if(cv.width!==W*dpr){cv.width=W*dpr;cv.height=H*dpr}
-  const c=cv.getContext('2d');
-  c.setTransform(dpr,0,0,dpr,0,0);
-  c.clearRect(0,0,W,H);
-  const p={t:12,r:14,b:26,l:42},gw=W-p.l-p.r,gh=H-p.t-p.b;
-  // Grid
-  const psnrMin=26,psnrMax=32.5;
-  c.strokeStyle='rgba(100,116,139,.18)';c.lineWidth=.5;
-  for(let i=0;i<=6;i++){
-    const y=p.t+gh*i/6;c.beginPath();c.moveTo(p.l,y);c.lineTo(p.l+gw,y);c.stroke();
-    c.fillStyle='#475569';c.font='9px system-ui';c.textAlign='right';
-    c.fillText((psnrMax-(psnrMax-psnrMin)*i/6).toFixed(1),p.l-4,y+3);
-  }
-  // Baseline
-  const {gen}=raceState;
-  const blY=p.t+gh*(1-(gen.base-psnrMin)/(psnrMax-psnrMin));
-  c.strokeStyle='rgba(245,158,11,.55)';c.setLineDash([4,3]);c.lineWidth=1;
-  c.beginPath();c.moveTo(p.l,blY);c.lineTo(p.l+gw,blY);c.stroke();c.setLineDash([]);
-  c.fillStyle='#f59e0b';c.font='9px monospace';c.textAlign='right';
-  c.fillText(`base ${gen.base.toFixed(1)}`,p.l+gw-4,blY-4);
-  // Lines for each island
-  const targets=raceState.targets,starts=raceState.starts;
-  const now=performance.now();
-  const prog=clamp((now-raceState.t0)/raceState.duration,0,1);
-  for(let i=0;i<8;i++){
-    if(raceState.survivors && !raceState.survivors.includes(i)) continue;
-    c.strokeStyle=STRATS[i].col;c.lineWidth=1.5;c.globalAlpha=.85;
-    c.beginPath();
-    for(let tt=0;tt<=60;tt++){
-      const localT=tt/60*prog;
-      const easeIn=1-Math.pow(1-localT,1.8);
-      const jitter=.2*Math.sin(now*0.008+i*1.37+tt*0.3)+.12*Math.cos(now*0.011+i*0.83+tt*0.5);
-      const v=lerp(starts[i],targets[i],easeIn)+jitter*(1-localT);
-      const x=p.l+gw*localT;
-      const y=p.t+gh*(1-(v-psnrMin)/(psnrMax-psnrMin));
-      tt===0?c.moveTo(x,y):c.lineTo(x,y);
-    }
-    c.stroke();c.globalAlpha=1;
-    // Dot at current
-    const localT=prog;
-    const easeIn=1-Math.pow(1-localT,1.8);
-    const jitter=.2*Math.sin(now*0.008+i*1.37)+.12*Math.cos(now*0.011+i*0.83);
-    const v=lerp(starts[i],targets[i],easeIn)+jitter*(1-localT);
-    const x=p.l+gw*localT;
-    const y=p.t+gh*(1-(v-psnrMin)/(psnrMax-psnrMin));
-    c.beginPath();c.arc(x,y,3,0,Math.PI*2);c.fillStyle=STRATS[i].col;c.fill();
-  }
-  // X-axis
-  c.fillStyle='#64748b';c.font='9px system-ui';c.textAlign='center';
-  c.fillText('iters',p.l+gw/2,H-6);
-}
+async function start(){
+  startTimer();
 
-async function addLedger(entry){
-  const host=$('#ledger-body');
-  const d=document.createElement('div');d.className='ledger-entry '+entry.t;
-  d.innerHTML=`<span class="ledger-gen">G${entry.g}</span><span class="ledger-txt">${entry.txt}</span>`;
-  host.appendChild(d);host.scrollTop=host.scrollHeight;
-  await sleep(80);d.classList.add('on');
-}
-
-async function ledgerGen(genNum,flag){
-  // Add entries for this generation (interspersed with raceStart)
-  const entries=LEDGER_FLOW.filter(e=>e.g===genNum);
-  if(flag==='all'){
-    for(const e of entries){await addLedger(e);await sleep(260)}
-  }
-}
-
-async function pArena(){
-  showSt('s-arena');
-  buildIslandCards();
-  await sleep(200);
-  // ─────── GEN 1 ───────
-  $('#gen-badge').textContent='GEN 1';
-  $('#round-badge').textContent='R1 · 2k iters · 8 → 4';
-  await revealIslands(GENS[0]);
-  await sleep(300);
-  // Add ledger header entry
-  await addLedger({g:1,t:'',txt:'<b>Generation 1 started</b> — 8 islands, each with a different strategy, training in parallel'});
-  raceStart(GENS[0],8500,2000,1,true,null);
-  // Stagger ledger entries during training
-  const gen1Entries=LEDGER_FLOW.filter(e=>e.g===1);
-  for(let i=0;i<gen1Entries.length;i++){await sleep(1500);await addLedger(gen1Entries[i])}
-  while(raceAnimRunning)await sleep(100);
+  setStep('parse','active');
+  setBrain('Parsing PDF with mineru', 'extracting markdown · 14 pages');
+  addThought('think', 'Loading <b>nerf_paper.pdf</b> via <b>mineru</b> → markdown.');
+  await sleep(900);
+  addThought('think', 'Extracted <b>14 pages</b>, 47 equations, 12 figures, 38 references.');
+  setProgress(8);
   await sleep(500);
-  // Round 2 & 3 for gen 1
-  $('#round-badge').textContent='R2 · 7k iters · 4 → 2';
-  const r1Survivors=GENS[0].isles.map((isl,i)=>isl.fate==='survived'?i:-1).filter(x=>x>=0);
-  r1Survivors.forEach(i=>{$('#isl-'+i).classList.remove('survived');$('#isl-'+i).classList.add('training','alive');$('#isl-st-'+i).textContent='training at 7k...'});
-  raceStart(GENS[0],3000,7000,2,true,r1Survivors);
-  while(raceAnimRunning)await sleep(100);
-  await sleep(300);
-  $('#round-badge').textContent='R3 · 30k iters · 2 → 1';
-  const r2Survivors=GENS[0].isles.map((isl,i)=>isl.r2!==undefined?i:-1).filter(x=>x>=0);
-  r2Survivors.forEach(i=>{$('#isl-'+i).classList.remove('survived');$('#isl-'+i).classList.add('training','alive');$('#isl-st-'+i).textContent='training at 30k...'});
-  raceStart(GENS[0],2500,30000,3,true,r2Survivors);
-  while(raceAnimRunning)await sleep(100);
+  setStep('parse','done');
+
+  setStep('read','active');
+  setBrain('Reading paper top → bottom', 'scanning sections');
+
+  const stops = [
+    { y:0,   page:1, brain:'Reading title & authors',       thought:['read','Title: <b>NeRF: Representing Scenes as Neural Radiance Fields</b>'], hl:null },
+    { y:30,  page:1, brain:'Parsing abstract',              thought:['read','5D input → density + view-dependent color via MLP.'], hl:'p-abstract' },
+    { y:170, page:2, brain:'Reading introduction',          thought:['think','MLP from 5D coords; differentiable volume rendering.'], hl:null },
+    { y:280, page:3, brain:'Method · scene representation', thought:['read','Function <b>F<sub>Θ</sub>: (x, d) → (c, σ)</b>'], hl:'p-mlp', tok:['F<sub>Θ</sub>(x,d)→(c,σ)','arch','🧠'] },
+    { y:380, page:4, brain:'Volume rendering integral',     thought:['think','Volume rendering: integral of T·σ·c along ray.'], hl:'p-eq1', tok:['C(r)=∫T·σ·c dt','eq','∫'] },
+    { y:480, page:5, brain:'Transmittance T(t)',            thought:['think','T(t) = exp(−∫σ ds) — accumulated transmittance.'], hl:'p-eq2', tok:['T(t)=exp(−∫σ)','eq','∫'] },
+    { y:610, page:6, brain:'Positional encoding',           thought:['read','γ(p) = (sin/cos 2^k π p) — fixes high-freq bias.'], hl:'p-eq3', tok:['γ(p)','eq','sin'] },
+    { y:720, page:7, brain:'Hierarchical sampling',         thought:['plan','Two networks: coarse (N<sub>c</sub>=64) + fine (N<sub>f</sub>=128).'], hl:null, tok:['N<sub>c</sub>=64, N<sub>f</sub>=128','param','#'] },
+    { y:820, page:8, brain:'Loss formulation',              thought:['plan','MSE loss on coarse + fine renderings.'], hl:'p-eq4', tok:['L=‖Ĉ−C‖²','loss','ℒ'] },
+    { y:930, page:9, brain:'Optimizer & schedule',          thought:['plan','Adam, lr 5e-4 → 5e-5, 4096 rays/batch.'], hl:null, tok:['Adam · lr=5e-4','param','⚙'] },
+  ];
+
+  let progressBase = 8;
+  for(const s of stops){
+    scrollPaperTo(s.y);
+    setPage(s.page);
+    setBrain(s.brain);
+    if(s.hl) focusEl(s.hl);
+    await sleep(420);
+    addThought(s.thought[0], s.thought[1]);
+    if(s.tok) addToken(s.tok[0], s.tok[1], s.tok[2]);
+    progressBase += 3;
+    setProgress(progressBase);
+    await sleep(900);
+  }
+  unfocusAll();
+  setStep('read','done');
+
+  setStep('extract','active');
+  setBrain('Extracting architecture', 'building structured spec');
+  addThought('think', 'Found <b>9 architectural decisions</b> + <b>4 hyperparameters</b>.');
+  await sleep(500);
+  addToken('positional encoding','arch','◌');
+  addToken('coarse + fine MLP','arch','▣');
   await sleep(400);
-
-  // ─────── GEN 2 ───────
-  orch('Gen 1 winner: SH degree 4 (PSNR 30.34). Seeding Gen 2...','discovery');
-  $('#gen-badge').textContent='GEN 2';
-  $('#round-badge').textContent='R1 · 2k iters · knowledge seeded';
-  $('#as-baseline').textContent='30.34 dB';
-  $('#m-gens').textContent='1';
-  await revealIslands(GENS[1]);
-  await addLedger({g:2,t:'',txt:'<b>Generation 2 started</b> — winners\' learnings feed next island prompts'});
-  await sleep(250);
-  raceStart(GENS[1],6500,2000,1,true,null);
-  const gen2Entries=LEDGER_FLOW.filter(e=>e.g===2);
-  for(let i=0;i<gen2Entries.length;i++){await sleep(1300);await addLedger(gen2Entries[i])}
-  while(raceAnimRunning)await sleep(100);
-  await sleep(300);
-  $('#round-badge').textContent='R2 · 7k iters';
-  const g2r1Survivors=GENS[1].isles.map((isl,i)=>isl.fate==='survived'?i:-1).filter(x=>x>=0);
-  g2r1Survivors.forEach(i=>{$('#isl-'+i).classList.remove('survived');$('#isl-'+i).classList.add('training','alive')});
-  raceStart(GENS[1],2200,7000,2,true,g2r1Survivors);
-  while(raceAnimRunning)await sleep(100);
-  await sleep(250);
-  $('#round-badge').textContent='R3 · 30k iters';
-  const g2r2Survivors=GENS[1].isles.map((isl,i)=>isl.r2!==undefined?i:-1).filter(x=>x>=0);
-  g2r2Survivors.forEach(i=>{$('#isl-'+i).classList.remove('survived');$('#isl-'+i).classList.add('training','alive')});
-  raceStart(GENS[1],2000,30000,3,true,g2r2Survivors);
-  while(raceAnimRunning)await sleep(100);
+  addToken('volumetric rendering','arch','☁');
   await sleep(400);
+  addToken('lr decay 5e-4→5e-5','param','⚙');
+  setProgress(45);
+  await sleep(500);
+  setStep('extract','done');
 
-  // ─────── GEN 3 ───────
-  orch('Gen 2 winner: emission_rgb + gentle prior (31.40). Gen 3 begins synthesis...','discovery');
-  $('#gen-badge').textContent='GEN 3';
-  $('#round-badge').textContent='R1 · 2k iters · synthesis phase';
-  $('#as-baseline').textContent='31.40 dB';
-  $('#m-gens').textContent='2';
-  await revealIslands(GENS[2]);
-  await addLedger({g:3,t:'',txt:'<b>Generation 3 started</b> — agents read full 17-entry knowledge ledger before coding'});
+  setStep('plan','active');
+  setBrain('Building DAG', 'mapping spec → NeRFStudio files');
+  addThought('plan', 'DAG: <b>field</b> → <b>model</b> → <b>config</b> → <b>pipeline</b>.');
+  await sleep(700);
+  addThought('plan', 'Will generate <b>8 files</b> totaling ~340 LOC.');
+  setProgress(55);
+  await sleep(500);
+  setStep('plan','done');
+
+  setStep('code','active');
+  setBrain('Coder writing template_field.py', 'streaming tokens');
+  addThought('write', 'Writing <b>template_field.py</b> — MLP + encodings.');
+  switchTab('field');
+  await typeBlock(FIELD_CODE, {speed:6});
+  markTabDone('field');
+  setProgress(72);
   await sleep(300);
-  raceStart(GENS[2],7000,2000,1,true,null);
-  const gen3Entries=LEDGER_FLOW.filter(e=>e.g===3);
-  for(let i=0;i<gen3Entries.length;i++){await sleep(1400);await addLedger(gen3Entries[i])}
-  while(raceAnimRunning)await sleep(100);
+
+  setBrain('Coder writing template_model.py', 'wiring losses');
+  addThought('write', 'Writing <b>template_model.py</b> — coarse/fine wiring + MSE loss.');
+  switchTab('model');
+  clearCode();
+  await typeBlock(MODEL_CODE, {speed:5});
+  markTabDone('model');
+  setProgress(86);
+  await sleep(300);
+
+  setBrain('Coder writing template_config.py', 'registering method');
+  addThought('write', 'Writing <b>template_config.py</b> — Adam + exponential decay.');
+  switchTab('config');
+  clearCode();
+  await typeBlock(CONFIG_CODE, {speed:5});
+  markTabDone('config');
+  setProgress(94);
   await sleep(400);
-  $('#round-badge').textContent='R2 · 7k iters';
-  const g3r1Survivors=GENS[2].isles.map((isl,i)=>isl.fate==='survived'?i:-1).filter(x=>x>=0);
-  g3r1Survivors.forEach(i=>{$('#isl-'+i).classList.remove('survived');$('#isl-'+i).classList.add('training','alive')});
-  raceStart(GENS[2],2500,7000,2,true,g3r1Survivors);
-  while(raceAnimRunning)await sleep(100);
-  await sleep(300);
-  $('#round-badge').textContent='R3 · 30k iters · CHAMPIONSHIP';
-  const g3r2Survivors=GENS[2].isles.map((isl,i)=>isl.r2!==undefined?i:-1).filter(x=>x>=0);
-  g3r2Survivors.forEach(i=>{$('#isl-'+i).classList.remove('survived');$('#isl-'+i).classList.add('training','alive')});
-  raceStart(GENS[2],2800,30000,3,true,g3r2Survivors);
-  while(raceAnimRunning)await sleep(100);
-  $('#m-gens').textContent='3';
+  setStep('code','done');
+
+  setStep('test','active');
+  setBrain('Running smoke tests', 'conda activate nerfstudio');
+  addThought('write', '<b>$ ns-train nerfify-vanilla</b> · forward OK · backward OK.');
+  await sleep(900);
+  addThought('think', 'PSNR rising · loss curve stable · all checks pass.');
+  setProgress(100);
+  await sleep(500);
+  setStep('test','done');
+
+  setBrain('Implementation ready', '8 files · 340 LOC · 0 errors');
+  $('finalCard').classList.add('show');
+  $('replay').classList.add('show');
+  $('footMsg').textContent = 'orchestrator → done ✓';
+  stopTimer();
 }
 
-/* ═══ DISCOVERY MOMENT ═══ */
-async function pDiscovery(){
-  const modal=$('#discovery-modal');
-  modal.classList.add('on');
-  await sleep(1200);
-  const techs=modal.querySelectorAll('.dtech');
-  for(const t of techs){await sleep(180);t.classList.add('on')}
-  await sleep(3000);
-  modal.classList.remove('on');
-}
-
-/* ═══ PHASE: RESULT ═══ */
-function pResult(){
-  showSt('s-result');
-  const vid=$('#result-vid');
-  vid.play().catch(()=>{});
-  vid.addEventListener('canplay',()=>$('#vid-load').classList.add('hide'),{once:true});
-  setTimeout(()=>$('#vid-load').classList.add('hide'),2000);
-  setTimeout(()=>$('#fcard').classList.add('on'),900);
-  setTimeout(()=>{
-    const fl=$('#ffiles');fl.classList.add('on');
-    const files=[
-      ['__init__.py','c'],
-      ['model.py','d'],
-      ['losses.py','d'],
-      ['rendering.py','d'],
-      ['configs.py','c'],
-      ['datamanager.py','c'],
-      ['pyproject.toml','c'],
-      ['README.md','c'],
-      ['improvement_summary.txt','d'],
-    ];
-    files.forEach(([f,m])=>{const d=document.createElement('div');d.className='ff';
-      d.innerHTML=`<span class="ff-${m}">${m==='d'?'★':'✓'}</span>${f}`;fl.appendChild(d)});
-  },1800);
-}
-
-/* ═══ METRICS ═══ */
-const MT={tokens:3184502,cost:12.84,turns:47};
-function updMetrics(){
-  const t=elapsed/DUR;
-  const f=Math.min(t*1.05,1);
-  $('#m-tok').textContent=fmt(Math.floor(MT.tokens*f));
-  $('#m-cost').textContent='$'+(MT.cost*f).toFixed(2);
-  $('#m-turns').textContent=Math.floor(MT.turns*f);
-}
-
-/* ═══ TIMELINE ═══ */
-const TL=[
-  {t:0,f:()=>{orch('Received arXiv:2404.13247 — starting Splatify pipeline','glow');$('#prog-stage').textContent='📄 Loading GS paper...'}},
-  {t:.2,f:pPaper},
-
-  {t:4.2,f:()=>{orch('Spawning Parser (Claude Haiku) — MinerU + citation recovery','glow');actNode('parser','extracting...');$('#prog-stage').textContent='📄 Parsing PDF (MinerU)'}},
-  {t:4.6,f:pParse},
-  {t:9,f:()=>doneNode('parser')},
-
-  {t:9.4,f:()=>{orch('Spawning Planner (Sonnet) — DAG + tier assessment','glow');actNode('planner','designing...');$('#prog-stage').textContent='📋 Architecture DAG (9 ext-points)'}},
-  {t:9.8,f:pPlan},
-  {t:14.5,f:()=>doneNode('planner')},
-
-  {t:14.9,f:()=>{orch('Spawning Coder (Claude Opus) — gs_template method','glow');actNode('coder','generating...');$('#prog-stage').textContent='⌨️ Generating gs_template method'}},
-  {t:15.3,f:pCode},
-  {t:26,f:()=>doneNode('coder')},
-
-  {t:26.3,f:()=>{orch('Parallel triple-check: Reviewer + Validator + Integrator','glow');actNode('critic','checking×3...');$('#prog-stage').textContent='✅ Triple-check (review×valid×int)'}},
-  {t:26.6,f:pCritic},
-  {t:30.8,f:()=>doneNode('critic')},
-
-  {t:31.2,f:()=>{orch('Spawning Tester — nerfstudio + gsplat smoke test','glow');actNode('tester','pip install...');$('#prog-stage').textContent='🧪 gsplat smoke test (10 iters)'}},
-  {t:31.5,f:pTest},
-  {t:34.2,f:async()=>{await pTestErr();errNode('tester','✗ split missed');orch('Test failed — Debugger analyzing gsplat','glow')}},
-  {t:35.2,f:()=>{actNode('debugger','diagnosing...');$('#dlbl').classList.add('show');eEls['tester-debugger'].classList.add('active');$('#prog-stage').textContent='🐛 Debugging split_gaussians'}},
-  {t:35.5,f:pDebug},
-  {t:38.5,f:()=>{doneNode('debugger');eEls['debugger-tester'].classList.add('active');orch('Fix applied — re-testing','glow')}},
-  {t:38.7,f:async()=>{actNode('tester','re-testing...');await pRetest()}},
-  {t:41,f:()=>{doneNode('tester');['tester-debugger','debugger-tester'].forEach(k=>{eEls[k].classList.remove('active');eEls[k].classList.add('done')});orch('Baseline PSNR 26.1 dB @10 iter — ready for Arena','glow')}},
-
-  /* ═══ KNOWLEDGE DISCOVERY ARENA ═══ */
-  {t:41.5,f:()=>{orch('🏟️ Entering Knowledge Discovery Arena — 8 islands spawn','discovery');actNode('arena','8 islands...');$('#prog-stage').textContent='🏟️ ARENA Gen 1 · 8 islands'}},
-  {t:42,f:pArena},
-
-  {t:55,f:()=>{$('#glbl').classList.add('show');eEls['arena-evolve'].classList.add('active');actNode('evolve','→ gen 2');$('#prog-stage').textContent='🧬 Knowledge transfer → Gen 2'}},
-  {t:58,f:()=>{eEls['arena-evolve'].classList.remove('active');eEls['arena-evolve'].classList.add('done');eEls['evolve-arena'].classList.add('active');doneNode('evolve')}},
-  {t:73,f:()=>{eEls['evolve-arena'].classList.remove('active');eEls['evolve-arena'].classList.add('done');actNode('evolve','→ gen 3');$('#prog-stage').textContent='🧬 Knowledge transfer → Gen 3'}},
-  {t:76,f:()=>doneNode('evolve')},
-
-  {t:92,f:()=>{doneNode('arena');champNode('champion','★ nebulags');orch('★ Synthesis complete — novel method discovered','discovery');$('#prog-stage').textContent='🏆 Champion identified'}},
-
-  /* ═══ DISCOVERY MOMENT ═══ */
-  {t:93,f:pDiscovery},
-  {t:98,f:()=>{orch('Rendering NebulaGS novel-view synthesis','discovery')}},
-
-  /* ═══ RESULT ═══ */
-  {t:99,f:()=>{actNode('result','rendering...');pResult();$('#prog-stage').textContent='🎯 Novel-view synthesis'}},
-  {t:102,f:()=>{doneNode('result');orch('NebulaGS · PSNR 31.72 dB · +3.42 vs baseline · 24 islands trained','discovery');$('#prog-stage').textContent='✓ Pipeline complete'}},
-  {t:110,f:()=>$('#replay').classList.add('on')},
-];
-
-/* ═══ MAIN LOOP ═══ */
-function tick(){
-  elapsed=(performance.now()-startT)/1000;
-  for(let i=0;i<TL.length;i++){if(!fired.has(i)&&elapsed>=TL[i].t){fired.add(i);TL[i].f()}}
-  const m=Math.floor(elapsed/60),s=Math.floor(elapsed%60);
-  $('#timer').textContent=`${m}:${s.toString().padStart(2,'0')}`;
-  const pct=clamp(elapsed/DUR*100,0,100);
-  $('#prog-fill').style.width=pct+'%';
-  const pm=Math.floor(Math.min(elapsed,DUR)/60),ps=Math.floor(Math.min(elapsed,DUR)%60);
-  $('#prog-lbl').textContent=`${pm}:${ps.toString().padStart(2,'0')} / 1:50`;
-  updMetrics();
-  if(elapsed<DUR+3)requestAnimationFrame(tick);
-}
-
-/* ═══ INIT ═══ */
-function init(){
-  buildIntroSplats();buildGraph();buildStages();
-  setTimeout(()=>{
-    $('#intro').style.opacity='0';
-    setTimeout(()=>{
-      $('#intro').style.display='none';
-      $('#app').style.display='flex';
-      requestAnimationFrame(()=>{
-        $('#app').style.opacity='1';
-        setTimeout(()=>{showNodes();setTimeout(()=>{startT=performance.now();tick()},350)},250);
-      });
-    },1000);
-  },2600);
-  $('#replay-btn').onclick=()=>location.reload();
-}
-init();
+$('replay').addEventListener('click', ()=>{
+  $('replay').classList.remove('show');
+  $('finalCard').classList.remove('show');
+  $('tokens').innerHTML='';
+  $('thoughts').innerHTML='';
+  tokCount=0; $('tokCount').textContent='0';
+  document.querySelectorAll('.pstep').forEach(el=>el.classList.remove('active','done'));
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('done'));
+  switchTab('field');
+  clearCode();
+  scrollPaperTo(0); setPage(1);
+  setProgress(0);
+  unfocusAll();
+  start();
+});
 </script>
 </body>
 </html>
