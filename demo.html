@@ -641,6 +641,8 @@ const app = document.getElementById('app');
 setTimeout(()=>{
   intro.classList.add('hide');
   app.classList.add('show');
+  // app must be visible so layout is real before we measure widths/offsets
+  setTimeout(()=>{ renderPdf(); }, 50);
   setTimeout(start, 600);
 }, 2400);
 
@@ -716,7 +718,7 @@ function addToken(text, kind, icon){
   t.className = 'tok' + (kind?' t-'+kind:'');
   t.innerHTML = (icon?`<span class="tok-icon">${icon}</span>`:'') + text;
   $('tokens').appendChild(t);
-  bumpTokens(2400 + Math.floor(Math.random()*1600));   // each extracted concept ≈ a chunk of context
+  bumpTokens(1600 + Math.floor(Math.random()*1200));
 }
 
 function addThought(kind, html){
@@ -727,7 +729,7 @@ function addThought(kind, html){
   $('thoughts').appendChild(div);
   const all = $('thoughts').children;
   while(all.length>10) all[0].remove();
-  bumpTokens(8000 + Math.floor(Math.random()*5000));   // a reasoning step burns more context
+  bumpTokens(5000 + Math.floor(Math.random()*3500));
 }
 
 function unfocusAll(){ document.querySelectorAll('.focus').forEach(e=>e.classList.remove('focus')); }
@@ -737,7 +739,10 @@ const PDF_URL = './static/pixelnerf.pdf';
 let PDF_TOTAL_PAGES = 14;
 const pageOffsets = [];   // y-offset of each rendered page (1-indexed: pageOffsets[0] unused)
 
+let pdfRendered = false;
 async function renderPdf(){
+  if(pdfRendered) return;
+  pdfRendered = true;
   const container = $('paperPdf');
   const stack = $('pdfPages');
   if(!window.pdfjsLib){
@@ -747,33 +752,37 @@ async function renderPdf(){
   try{
     const pdf = await pdfjsLib.getDocument(PDF_URL).promise;
     PDF_TOTAL_PAGES = pdf.numPages;
-    setPage(1);
-    // target render width based on container
-    const targetW = Math.min(container.clientWidth - 28, 720);
+    $('pageNo').textContent = `1 / ${PDF_TOTAL_PAGES}`;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // fall back if container hasn't laid out yet
+    const cw = container.clientWidth || 380;
+    const targetW = Math.max(280, Math.min(cw - 28, 720));
     for(let i=1;i<=pdf.numPages;i++){
       const page = await pdf.getPage(i);
       const viewport = page.getViewport({scale:1});
       const scale = targetW / viewport.width;
-      const v2 = page.getViewport({scale:scale * (window.devicePixelRatio||1)});
+      const v2 = page.getViewport({scale:scale * dpr});
       const canvas = document.createElement('canvas');
       canvas.width = v2.width;
       canvas.height = v2.height;
-      canvas.style.width = (v2.width / (window.devicePixelRatio||1)) + 'px';
-      canvas.style.height = (v2.height / (window.devicePixelRatio||1)) + 'px';
+      canvas.style.width = (v2.width / dpr) + 'px';
+      canvas.style.height = (v2.height / dpr) + 'px';
       stack.appendChild(canvas);
       const ctx = canvas.getContext('2d');
       await page.render({canvasContext: ctx, viewport: v2}).promise;
-      // measure offset relative to stack
-      pageOffsets[i] = canvas.offsetTop - 18;
     }
+    // measure all offsets after the full stack has laid out
+    requestAnimationFrame(()=>{
+      const canvases = stack.querySelectorAll('canvas');
+      canvases.forEach((c,idx)=>{ pageOffsets[idx+1] = c.offsetTop - 18; });
+    });
     $('pdfLoading').classList.add('hide');
   }catch(err){
     console.error('pdf render failed', err);
-    $('pdfLoading').textContent = 'pdf render failed';
+    $('pdfLoading').textContent = 'pdf render failed: ' + (err && err.message || err);
   }
 }
-// kick off render immediately so it's ready by the time the agent starts reading
-renderPdf();
+// renderPdf is invoked after the app becomes visible (see intro→app handoff above)
 
 function scrollPaperToPage(page){
   if(!pageOffsets[page]) return;
@@ -826,8 +835,7 @@ async function typeLine(line, opts={}){
   wrap.innerHTML = colorize(line) + '\n';
   const body = codeEl.parentElement;
   body.scrollTop = body.scrollHeight;
-  // each emitted code line burns through cached context + emits output tokens
-  bumpTokens(900 + Math.floor(line.length * 18) + Math.floor(Math.random()*400));
+  bumpTokens(500 + Math.floor(line.length * 11) + Math.floor(Math.random()*300));
 }
 
 async function typeBlock(lines, opts={}){
@@ -1009,7 +1017,7 @@ async function start(){
   setStep('parse','done');
 
   setStep('read','active');
-  setStreamRate(8000);
+  setStreamRate(5500);
   setBrain('Reading paper top → bottom', 'scanning sections');
 
   // pages map roughly to pixelNeRF (Yu et al., 2021) structure
@@ -1044,7 +1052,7 @@ async function start(){
   setStep('read','done');
 
   setStep('extract','active');
-  setStreamRate(12000);
+  setStreamRate(8000);
   setBrain('Extracting architecture', 'building structured spec');
   addThought('think', 'Found <b>9 architectural decisions</b> + <b>4 hyperparameters</b>.');
   await sleep(500);
@@ -1059,7 +1067,7 @@ async function start(){
   setStep('extract','done');
 
   setStep('plan','active');
-  setStreamRate(15000);
+  setStreamRate(10000);
   setBrain('Building DAG', 'mapping spec → NeRFStudio files');
   addThought('plan', 'DAG: <b>field</b> → <b>model</b> → <b>config</b> → <b>pipeline</b>.');
   await sleep(700);
@@ -1069,7 +1077,7 @@ async function start(){
   setStep('plan','done');
 
   setStep('code','active');
-  setStreamRate(28000);
+  setStreamRate(18000);
   setBrain('Coder writing template_field.py', 'streaming tokens');
   addThought('write', 'Writing <b>template_field.py</b> — MLP + encodings.');
   switchTab('field');
@@ -1098,7 +1106,7 @@ async function start(){
   setStep('code','done');
 
   setStep('test','active');
-  setStreamRate(10000);
+  setStreamRate(7000);
   setBrain('Running smoke tests', 'conda activate nerfstudio');
   addThought('write', '<b>$ ns-train nerfify-vanilla</b> · forward OK · backward OK.');
   await sleep(900);
@@ -1109,7 +1117,7 @@ async function start(){
 
   // ── render stage
   setStep('render','active');
-  setStreamRate(20000);
+  setStreamRate(13000);
   setBrain('Rendering DrJohnson · 4 preview views', 'iter 3000 · 4096 rays/batch');
   $('renderOverlay').classList.add('show');
   await sleep(1400);
@@ -1119,13 +1127,13 @@ async function start(){
   await sleep(900);
 
   setBrain('Inspecting rendered images', 'looking for visual artifacts');
-  setStreamRate(35000);
+  setStreamRate(22000);
   addThought('think', 'Vision pass: <b>floaters</b> in low-density regions, <b>blur</b> on speculars.');
   $('roIssues').classList.add('show');
   await sleep(1800);
 
   setBrain('Rewriting template_model.py', 'based on visual analysis of 4 views');
-  setStreamRate(32000);
+  setStreamRate(20000);
   addThought('plan', 'Fix: bump <b>N<sub>f</sub>=128 → 192</b>, add <b>density noise</b>, white-bg composite.');
   // hide overlay so user sees agent re-typing the fixed code
   $('renderOverlay').classList.remove('show');
@@ -1166,10 +1174,11 @@ async function start(){
   setStep('render','done');
 
   setBrain('All stages complete', 'DrJohnson · 31.4 PSNR · 8 files · 1 fix iter');
-  // ensure final readout lands near ~1M tokens for visual punch
+  // pin final readout to ~750-800K tokens
   setStreamRate(0);
-  if(tokCount < 1_000_000){
-    bumpTokens(1_000_000 - tokCount + Math.floor(Math.random()*40_000));
+  const target = 720_000 + Math.floor(Math.random()*60_000);   // 720K–780K
+  if(tokCount < target){
+    bumpTokens(target - tokCount);
   }
   $('finalCard').classList.add('show');
   $('replay').classList.add('show');
