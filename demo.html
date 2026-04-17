@@ -181,8 +181,17 @@ main{flex:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.85fr) 
   padding:.18rem .55rem;border-radius:5px;backdrop-filter:blur(8px);
   border:1px solid var(--border2);font-weight:600;letter-spacing:.4px;
   box-shadow:0 4px 12px rgba(0,0,0,.4)}
-.paper-pdf{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;
-  border-radius:0;display:block;z-index:1}
+.paper-pdf{position:absolute;inset:0;background:#1a1f2e;overflow:hidden;z-index:1}
+#pdfPages{display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 0;
+  will-change:transform;transition:transform 1.6s cubic-bezier(.65,.05,.36,1)}
+#pdfPages canvas{box-shadow:0 6px 22px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.04);
+  background:#fff;display:block;max-width:calc(100% - 28px);height:auto;border-radius:2px}
+.pdf-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:.78rem;color:var(--cyan);
+  background:#1a1f2e;letter-spacing:1px;z-index:7;transition:opacity .5s ease}
+.pdf-loading.hide{opacity:0;pointer-events:none}
+.pdf-loading::after{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cyan);
+  margin-left:8px;box-shadow:0 0 12px currentColor;animation:dotPulse 1s ease-in-out infinite}
 .paper-wrap{box-shadow:inset 0 0 0 1px var(--border)}
 
 .agent-wrap{flex:1;display:flex;flex-direction:column;min-height:0;background:radial-gradient(ellipse at top,rgba(34,211,238,.06),transparent 60%)}
@@ -452,8 +461,8 @@ main{flex:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.85fr) 
       </div>
       <div class="paper-wrap">
         <div class="scan-line" id="scanLine"></div>
-        <iframe id="paperPdf" class="paper-pdf"
-          src="./static/pixelnerf.pdf#page=1&toolbar=0&navpanes=0&scrollbar=0&view=FitH"></iframe>
+        <div id="paperPdf" class="paper-pdf"><div id="pdfPages"></div></div>
+        <div class="pdf-loading" id="pdfLoading">rendering pdf…</div>
         <div class="page-no" id="pageNo">1 / 14</div>
         <div class="paper" style="display:none">
           <div class="paper-scroll" id="paperScroll">
@@ -612,7 +621,12 @@ main{flex:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.85fr) 
   replay
 </button>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
+if(window['pdfjsLib']){
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
 const pc = document.getElementById('particles');
 for(let i=0;i<24;i++){
   const p = document.createElement('div');
@@ -720,11 +734,50 @@ function unfocusAll(){ document.querySelectorAll('.focus').forEach(e=>e.classLis
 function focusEl(){ /* no-op: paper is now a real PDF */ }
 
 const PDF_URL = './static/pixelnerf.pdf';
-const PDF_TOTAL_PAGES = 14;
+let PDF_TOTAL_PAGES = 14;
+const pageOffsets = [];   // y-offset of each rendered page (1-indexed: pageOffsets[0] unused)
+
+async function renderPdf(){
+  const container = $('paperPdf');
+  const stack = $('pdfPages');
+  if(!window.pdfjsLib){
+    $('pdfLoading').textContent = 'pdf.js failed to load — paper unavailable';
+    return;
+  }
+  try{
+    const pdf = await pdfjsLib.getDocument(PDF_URL).promise;
+    PDF_TOTAL_PAGES = pdf.numPages;
+    setPage(1);
+    // target render width based on container
+    const targetW = Math.min(container.clientWidth - 28, 720);
+    for(let i=1;i<=pdf.numPages;i++){
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({scale:1});
+      const scale = targetW / viewport.width;
+      const v2 = page.getViewport({scale:scale * (window.devicePixelRatio||1)});
+      const canvas = document.createElement('canvas');
+      canvas.width = v2.width;
+      canvas.height = v2.height;
+      canvas.style.width = (v2.width / (window.devicePixelRatio||1)) + 'px';
+      canvas.style.height = (v2.height / (window.devicePixelRatio||1)) + 'px';
+      stack.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      await page.render({canvasContext: ctx, viewport: v2}).promise;
+      // measure offset relative to stack
+      pageOffsets[i] = canvas.offsetTop - 18;
+    }
+    $('pdfLoading').classList.add('hide');
+  }catch(err){
+    console.error('pdf render failed', err);
+    $('pdfLoading').textContent = 'pdf render failed';
+  }
+}
+// kick off render immediately so it's ready by the time the agent starts reading
+renderPdf();
+
 function scrollPaperToPage(page){
-  const iframe = $('paperPdf');
-  // setting src reloads but Chrome's PDF viewer transitions cleanly with FitH zoom
-  iframe.src = `${PDF_URL}#page=${page}&toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
+  if(!pageOffsets[page]) return;
+  $('pdfPages').style.transform = `translateY(${-pageOffsets[page]}px)`;
 }
 function scrollPaperTo(_){ /* compat shim */ }
 function setPage(n,total){
