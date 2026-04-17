@@ -300,26 +300,30 @@ main{flex:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.85fr) 
 .ro-meta .v{color:var(--amber);font-weight:700}
 .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;flex-shrink:0;transition:all .6s cubic-bezier(.22,1,.36,1)}
 .ro-grid.shrink{transform:scale(.5);transform-origin:top left;opacity:.55;height:0;overflow:hidden;margin-bottom:-1rem}
-.thumb{position:relative;aspect-ratio:16/10;border-radius:8px;overflow:hidden;
+.thumb{position:relative;aspect-ratio:16/10;border-radius:8px;overflow:hidden;background:#000;
   border:1px solid var(--border2);box-shadow:0 4px 14px rgba(0,0,0,.4);
   opacity:0;transform:scale(.85);animation:thumbIn .6s cubic-bezier(.22,1,.36,1) forwards}
-.thumb.t1{animation-delay:.05s;background:radial-gradient(ellipse at 30% 60%,#3b2a1a 0%,#1a1410 50%,#0a0807 100%)}
-.thumb.t2{animation-delay:.18s;background:radial-gradient(ellipse at 60% 50%,#4a3520 0%,#221814 50%,#0c0907 100%)}
-.thumb.t3{animation-delay:.31s;background:radial-gradient(ellipse at 40% 40%,#3a2818 0%,#1c1410 60%,#080605 100%)}
-.thumb.t4{animation-delay:.44s;background:radial-gradient(ellipse at 50% 55%,#52391f 0%,#241814 60%,#0a0807 100%)}
+.thumb:nth-child(1){animation-delay:.05s}
+.thumb:nth-child(2){animation-delay:.18s}
+.thumb:nth-child(3){animation-delay:.31s}
+.thumb:nth-child(4){animation-delay:.44s}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;
+  filter:blur(1.2px) saturate(.7) brightness(.85) contrast(.92);
+  transition:filter .9s ease}
+.ro-grid.fixed .thumb img{filter:none}
 @keyframes thumbIn{to{opacity:1;transform:none}}
-.thumb .noise{position:absolute;inset:0;
+/* artifact overlay: floaters + scanlines + noise — disappears when fixed */
+.thumb .thumb-fx{position:absolute;inset:0;pointer-events:none;
   background-image:
-    radial-gradient(circle at 20% 30%,rgba(255,200,150,.18) 0,transparent 22%),
-    radial-gradient(circle at 75% 65%,rgba(150,180,255,.12) 0,transparent 18%),
-    repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 2px,transparent 2px 5px),
-    radial-gradient(circle at 50% 50%,transparent 30%,rgba(0,0,0,.5) 90%);
-  filter:blur(.6px);mix-blend-mode:screen;animation:noiseFlicker 1.4s ease-in-out infinite}
-.thumb::before{content:'';position:absolute;inset:0;
-  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.2) 3px 4px);opacity:.4;pointer-events:none}
-.thumb::after{content:'';position:absolute;inset:-20% -10%;
-  background:radial-gradient(ellipse at center,transparent 40%,rgba(168,85,247,.18) 70%,transparent);
-  filter:blur(8px);mix-blend-mode:screen;animation:floaterDrift 3s ease-in-out infinite}
+    radial-gradient(circle at 22% 32%,rgba(255,180,140,.32) 0,transparent 16%),
+    radial-gradient(circle at 72% 28%,rgba(180,200,255,.26) 0,transparent 14%),
+    radial-gradient(circle at 60% 70%,rgba(168,85,247,.22) 0,transparent 18%),
+    radial-gradient(circle at 35% 75%,rgba(236,72,153,.18) 0,transparent 14%),
+    repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.18) 3px 4px),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 2px,transparent 2px 6px);
+  mix-blend-mode:screen;transition:opacity .9s ease;animation:noiseFlicker 1.4s ease-in-out infinite}
+.ro-grid.fixed .thumb .thumb-fx{opacity:0}
+.ro-grid.fixed .thumb .psnr{color:#34d399}
 .thumb .lbl{position:absolute;top:6px;left:8px;font-size:.6rem;font-family:var(--font-mono);color:var(--text);
   background:rgba(0,0,0,.55);padding:.1rem .4rem;border-radius:4px;backdrop-filter:blur(4px);font-weight:600}
 .thumb .psnr{position:absolute;bottom:6px;right:8px;font-size:.6rem;font-family:var(--font-mono);color:var(--amber);
@@ -549,10 +553,10 @@ main{flex:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.85fr) 
             <div class="ro-meta" id="roMeta">iter 3000 · PSNR <span class="v">22.4</span></div>
           </div>
           <div class="ro-grid" id="roGrid">
-            <div class="thumb t1"><div class="noise"></div><span class="lbl">view 0</span><span class="psnr">21.8</span></div>
-            <div class="thumb t2"><div class="noise"></div><span class="lbl">view 1</span><span class="psnr">22.6</span></div>
-            <div class="thumb t3"><div class="noise"></div><span class="lbl">view 2</span><span class="psnr">22.1</span></div>
-            <div class="thumb t4"><div class="noise"></div><span class="lbl">view 3</span><span class="psnr">23.0</span></div>
+            <div class="thumb"><img src="./static/demo-images/view1-front.png" alt="view 0"><div class="thumb-fx"></div><span class="lbl">view 0 · front</span><span class="psnr">21.8</span></div>
+            <div class="thumb"><img src="./static/demo-images/view2-side.png"  alt="view 1"><div class="thumb-fx"></div><span class="lbl">view 1 · side</span><span class="psnr">22.6</span></div>
+            <div class="thumb"><img src="./static/demo-images/view3-back.png"  alt="view 2"><div class="thumb-fx"></div><span class="lbl">view 2 · back</span><span class="psnr">22.1</span></div>
+            <div class="thumb"><img src="./static/demo-images/view4-wide.png"  alt="view 3"><div class="thumb-fx"></div><span class="lbl">view 3 · wide</span><span class="psnr">23.0</span></div>
           </div>
           <div class="ro-issues" id="roIssues">
             <div class="issue"><span class="ix">!</span> floaters in low-density regions</div>
@@ -831,6 +835,50 @@ const MODEL_CODE = [
 '        return {"rgb_loss": loss}',
 ];
 
+const MODEL_CODE_FIXED = [
+'"""NeRF model — v2: fixed after visual analysis of preview frames."""',
+'from dataclasses import dataclass',
+'import torch',
+'from nerfstudio.models.base_model import Model, ModelConfig',
+'from nerfstudio.model_components.renderers import RGBRenderer',
+'from nerfstudio.model_components.ray_samplers import UniformSampler, PDFSampler',
+'',
+'from .template_field import NeRFField',
+'',
+'',
+'@dataclass',
+'class NeRFModelConfig(ModelConfig):',
+'    num_coarse_samples: int = 64     # N_c',
+'    num_fine_samples:   int = 192    # N_f ↑ from 128 (fix: undersampled fine net)',
+'    density_noise_std:  float = 1.0  # fix: regularize floaters in low-density regions',
+'    background_color:   str   = "white"  # fix: speculars on green wall',
+'',
+'',
+'class NeRFModel(Model):',
+'    config: NeRFModelConfig',
+'',
+'    def populate_modules(self) -> None:',
+'        super().populate_modules()',
+'        self.field_coarse = NeRFField()',
+'        self.field_fine   = NeRFField()',
+'        self.sampler_uniform = UniformSampler(num_samples=self.config.num_coarse_samples)',
+'        self.sampler_pdf     = PDFSampler(num_samples=self.config.num_fine_samples)',
+'        self.renderer_rgb    = RGBRenderer(background_color=self.config.background_color)',
+'',
+'    def get_outputs(self, ray_bundle):',
+'        outs = super().get_outputs(ray_bundle)',
+'        if self.training and self.config.density_noise_std > 0:',
+'            noise = torch.randn_like(outs["density"]) * self.config.density_noise_std',
+'            outs["density"] = torch.relu(outs["density"] + noise)   # kills floaters',
+'        return outs',
+'',
+'    def get_loss_dict(self, outputs, batch, metrics_dict=None):',
+'        gt = batch["image"].to(outputs["rgb_coarse"].device)',
+'        loss = ((outputs["rgb_coarse"] - gt) ** 2).mean() + \\',
+'               ((outputs["rgb_fine"]   - gt) ** 2).mean()    # eq. (6)',
+'        return {"rgb_loss": loss}',
+];
+
 const CONFIG_CODE = [
 '"""NeRFStudio method registration."""',
 'from nerfstudio.engine.optimizers import AdamOptimizerConfig',
@@ -975,20 +1023,39 @@ async function start(){
   $('roIssues').classList.add('show');
   await sleep(1800);
 
-  setBrain('Patching template_model.py', 'increase N_f, raise density threshold');
-  addThought('plan', 'Fix: bump <b>N<sub>f</sub>=128 → 192</b>, add density activation noise.');
-  // show patch in code pane behind overlay (won't be visible while overlay is up, but keeps state coherent)
-  switchTab('model');
+  setBrain('Rewriting template_model.py', 'based on visual analysis of 4 views');
+  addThought('plan', 'Fix: bump <b>N<sub>f</sub>=128 → 192</b>, add <b>density noise</b>, white-bg composite.');
+  // hide overlay so user sees agent re-typing the fixed code
+  $('renderOverlay').classList.remove('show');
   await sleep(700);
-  addThought('write', 'Re-installing method · re-launching <b>ns-train</b>.');
+
+  switchTab('model');
+  clearCode();
+  await typeBlock(MODEL_CODE_FIXED, {speed:5});
+  markTabDone('model');
+  setProgress(96);
+  await sleep(500);
+
+  addThought('write', '<b>$ pip install -e .</b> · re-installing method.');
+  await sleep(700);
+  addThought('write', '<b>$ ns-train nerfify-vanilla --max-iters 30000</b>');
   await sleep(900);
 
-  // transition: shrink thumbnails, reveal final video
+  // bring overlay back, with thumbnails now showing crisp images
   setBrain('Re-rendering DrJohnson', 'final pass · all 50 views');
   $('roSub').textContent = 'fix applied · re-rendering';
   $('roMeta').innerHTML = 'iter 30000 · PSNR <span class="v" style="color:#34d399">31.4</span>';
+  $('roIssues').classList.remove('show');
+  $('renderOverlay').classList.add('show');
+  await sleep(700);
+  $('roGrid').classList.add('fixed');
+  // update PSNR labels on thumbnails
+  document.querySelectorAll('#roGrid .psnr').forEach((el,i)=>{
+    el.textContent = ['31.2','31.6','31.1','31.7'][i];
+  });
+  await sleep(1300);
   $('roGrid').classList.add('shrink');
-  await sleep(800);
+  await sleep(700);
   $('roFinal').classList.add('show');
   setProgress(100);
 
@@ -1010,6 +1077,10 @@ $('replay').addEventListener('click', ()=>{
   $('roIssues').classList.remove('show');
   $('roFinal').classList.remove('show');
   $('roGrid').classList.remove('shrink');
+  $('roGrid').classList.remove('fixed');
+  document.querySelectorAll('#roGrid .psnr').forEach((el,i)=>{
+    el.textContent = ['21.8','22.6','22.1','23.0'][i];
+  });
   $('roSub').textContent = 'rendering 4 preview frames…';
   $('roMeta').innerHTML = 'iter 3000 · PSNR <span class="v">22.4</span>';
   $('tokens').innerHTML='';
