@@ -687,8 +687,8 @@ function setBrain(text, sub){
 }
 
 let tokCount = 0;
+const TOK_CAP = 900_000;
 function renderTokCount(){
-  // pretty format: 0 → "0", 1.2K → "1.2K", 1,234,567 → "1.23M"
   const n = tokCount;
   let s;
   if(n >= 1_000_000) s = (n/1_000_000).toFixed(2)+'M';
@@ -696,7 +696,11 @@ function renderTokCount(){
   else s = String(n);
   $('tokCount').textContent = s;
 }
-function bumpTokens(n){ tokCount += n; renderTokCount(); }
+function bumpTokens(n){
+  if(tokCount >= TOK_CAP) return;
+  tokCount = Math.min(TOK_CAP, tokCount + n);
+  renderTokCount();
+}
 
 // Background streaming: simulate the agent burning through context (~1M total)
 let streamTimer = null, streamRate = 0;  // tokens per tick (60ms)
@@ -1174,9 +1178,9 @@ async function start(){
   setStep('render','done');
 
   setBrain('All stages complete', 'DrJohnson · 31.4 PSNR · 8 files · 1 fix iter');
-  // pin final readout to ~750-800K tokens
+  // pin final readout into the 700K–850K band
   setStreamRate(0);
-  const target = 720_000 + Math.floor(Math.random()*60_000);   // 720K–780K
+  const target = 720_000 + Math.floor(Math.random()*120_000);
   if(tokCount < target){
     bumpTokens(target - tokCount);
   }
